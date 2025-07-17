@@ -152,206 +152,85 @@ Node *GameTree::findNodeByPosition(uint8_t x, uint8_t y)
 //注意前方石山代码-----------------------------------------
 void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整数表示不五手N打 n表示五手n打
 {
-    vector<pair<uint8_t, uint8_t>> candidatePoints;
-    candidatePoints.clear();
+    //    初始化nodeBest为nodeRoot的第一个子节点;
+    nodeBest = *nodeRoot->children.begin();
+    //遍历子节点 寻找最大值
+    for (Node *n : nodeRoot->children)
+        if (n->value > nodeBest->value) nodeBest = n;
 
-    vector<Node *> MaxValueSortNodes; //存储估值依次最高的点，估值点的值是不变的话
-    for (auto p : nodeRoot->children)
-        MaxValueSortNodes.push_back(p);
-
-    sort(MaxValueSortNodes.begin(), MaxValueSortNodes.end(), [](Node *a, Node *b) { return a->value > b->value; });
-
-    set<vector<pair<uint8_t, uint8_t>>> combined;
-    //const int maxRetries = 20; //安全上限？
-
-    auto vp = std::make_unique<fiveNAction>(); //访问指针
-    if (N == 2) {
-        int firstCount = 0, secondCount = 1;
-        int firstIndex = min(firstCount, (int) MaxValueSortNodes.size());
-        int secondIndex = min(secondCount, (int) MaxValueSortNodes.size());
-        do {
-            candidatePoints.emplace_back(MaxValueSortNodes[firstIndex]->fX, MaxValueSortNodes[firstIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[secondIndex]->fX, MaxValueSortNodes[secondIndex]->fY);
-
-            if (combined.find(candidatePoints) != combined.end()) {
-                candidatePoints.clear();
-                secondIndex++;
-                continue;
-            }
-            combined.insert(candidatePoints);
-
-            //n==2时，第二个打点开始依次遍历（贪心算法），直到第二个打点遍历到估值集合的末尾任然是对称的，那么第一个打点的位置加一，第二个打点跟在后面再遍历
-            if (secondIndex == MaxValueSortNodes.size()) {
-                firstIndex++;
-                secondIndex = firstIndex + 1;
-            }
-            //如果这两个打点到了最后一种组合还是对称，那么就直接返回最大可能的那一种组合
-            if (firstIndex == MaxValueSortNodes.size() - 1) {
-                candidatePoints.emplace_back(MaxValueSortNodes[0]->fX, MaxValueSortNodes[0]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[1]->fX, MaxValueSortNodes[1]->fY);
-                break;
-            }
-        } while (vp->checkSymmetry(candidatePoints));
-    } else if (N == 3) {
-        int firstCount = 0, secondCount = 1, thirdCount = 2;
-        int firstIndex = min(firstCount, (int) MaxValueSortNodes.size());
-        int secondIndex = min(secondCount, (int) MaxValueSortNodes.size());
-        int thirdIndex = min(thirdCount, (int) MaxValueSortNodes.size());
-        do {
-            candidatePoints.emplace_back(MaxValueSortNodes[firstIndex]->fX, MaxValueSortNodes[firstIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[secondIndex]->fX, MaxValueSortNodes[secondIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[thirdIndex]->fX, MaxValueSortNodes[thirdIndex]->fY);
-
-            if (combined.find(candidatePoints) != combined.end()) {
-                candidatePoints.clear();
-                thirdIndex++;
-                continue;
-            }
-            combined.insert(candidatePoints);
-
-            if (thirdIndex == MaxValueSortNodes.size()) {
-                secondIndex++;
-                thirdIndex = secondIndex + 1;
-            }
-            if (secondIndex == MaxValueSortNodes.size() - 1) {
-                firstIndex++;
-                secondIndex = firstIndex + 1;
-                thirdIndex = secondCount + 1;
-            }
-            if (firstIndex == MaxValueSortNodes.size() - 2) {
-                candidatePoints.emplace_back(MaxValueSortNodes[0]->fX, MaxValueSortNodes[0]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[1]->fX, MaxValueSortNodes[1]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[2]->fX, MaxValueSortNodes[2]->fY);
-                break;
-            }
-        } while (vp->checkSymmetry(candidatePoints));
-    } else if (N == 4) {
-        int firstCount = 0, secondCount = 1, thirdCount = 2, fourthCount = 3;
-        int firstIndex = min(firstCount, (int) MaxValueSortNodes.size());
-        int secondIndex = min(secondCount, (int) MaxValueSortNodes.size());
-        int thirdIndex = min(thirdCount, (int) MaxValueSortNodes.size());
-        int fourthIndex = min(fourthCount, (int) MaxValueSortNodes.size());
-        do {
-            candidatePoints.emplace_back(MaxValueSortNodes[firstIndex]->fX, MaxValueSortNodes[firstIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[secondIndex]->fX, MaxValueSortNodes[secondIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[thirdIndex]->fX, MaxValueSortNodes[thirdIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[fourthIndex]->fX, MaxValueSortNodes[fourthIndex]->fY);
-
-            if (combined.find(candidatePoints) != combined.end()) {
-                candidatePoints.clear();
-                fourthIndex++;
-                continue;
-            }
-            combined.insert(candidatePoints);
-
-            if (fourthIndex == MaxValueSortNodes.size()) {
-                thirdIndex++;
-                fourthIndex = thirdIndex + 1;
-            }
-            if (thirdIndex == MaxValueSortNodes.size() - 1) {
-                secondIndex++;
-                thirdIndex = secondIndex + 1;
-                fourthIndex = thirdIndex + 1;
-            }
-            if (secondIndex == MaxValueSortNodes.size() - 2) {
-                firstIndex++;
-                secondIndex = firstIndex + 1;
-                thirdIndex = secondCount + 1;
-                fourthIndex = thirdIndex + 1;
-            }
-            if (firstIndex == MaxValueSortNodes.size() - 3) {
-                candidatePoints.emplace_back(MaxValueSortNodes[0]->fX, MaxValueSortNodes[0]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[1]->fX, MaxValueSortNodes[1]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[2]->fX, MaxValueSortNodes[2]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[3]->fX, MaxValueSortNodes[3]->fY);
-                break;
-            }
-
-        } while (vp->checkSymmetry(candidatePoints));
-    } else if (N == 5) {
-        int firstCount = 0, secondCount = 1, thirdCount = 2, fourthCount = 3, fifthCount = 4;
-        int firstIndex = min(firstCount, (int) MaxValueSortNodes.size());
-        int secondIndex = min(secondCount, (int) MaxValueSortNodes.size());
-        int thirdIndex = min(thirdCount, (int) MaxValueSortNodes.size());
-        int fourthIndex = min(fourthCount, (int) MaxValueSortNodes.size());
-        int fifthIndex = min(fifthCount, (int) MaxValueSortNodes.size());
-
-        do {
-            candidatePoints.emplace_back(MaxValueSortNodes[firstIndex]->fX, MaxValueSortNodes[firstIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[secondIndex]->fX, MaxValueSortNodes[secondIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[thirdIndex]->fX, MaxValueSortNodes[thirdIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[fourthIndex]->fX, MaxValueSortNodes[fourthIndex]->fY);
-            candidatePoints.emplace_back(MaxValueSortNodes[fifthIndex]->fX, MaxValueSortNodes[fifthIndex]->fY);
-
-            if (combined.find(candidatePoints) != combined.end()) {
-                candidatePoints.clear();
-                fifthIndex++;
-                continue;
-            }
-            combined.insert(candidatePoints);
-
-            if (fifthIndex == MaxValueSortNodes.size()) {
-                fourthIndex++;
-                fifthIndex = fourthIndex + 1;
-            }
-            if (fourthIndex == MaxValueSortNodes.size() - 1) {
-                thirdIndex++;
-                fourthIndex = thirdIndex + 1;
-                fifthIndex = fourthIndex + 1;
-            }
-            if (thirdIndex == MaxValueSortNodes.size() - 2) {
-                secondIndex++;
-                thirdIndex = secondIndex + 1;
-                fourthIndex = thirdIndex + 1;
-                fifthIndex = fourthIndex + 1;
-            }
-            if (secondIndex == MaxValueSortNodes.size() - 3) {
-                firstIndex++;
-                secondIndex = firstIndex + 1;
-                thirdIndex = secondCount + 1;
-                fourthIndex = thirdIndex + 1;
-                fifthIndex = fourthIndex + 1;
-            }
-            if (firstIndex == MaxValueSortNodes.size() - 4) {
-                candidatePoints.emplace_back(MaxValueSortNodes[0]->fX, MaxValueSortNodes[0]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[1]->fX, MaxValueSortNodes[1]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[2]->fX, MaxValueSortNodes[2]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[3]->fX, MaxValueSortNodes[3]->fY);
-                candidatePoints.emplace_back(MaxValueSortNodes[4]->fX, MaxValueSortNodes[4]->fY);
-                break;
-            }
-
-        } while (vp->checkSymmetry(candidatePoints));
-    }
-
-    nodeBest = MaxValueSortNodes[0]; //不是五手N打的情况
-
+    //若处于五手打N中
     if (five == 0) {
+        //先判断棋盘是否对称
+        std::vector<std::pair<int, int>> currentBoard = this->nodeRoot->getCurrentBoard();
+
+        // 调用FiveNAction的isSymmetric函数判断当前棋盘是否对称
+        std::cout << "FiveNAction执行:";
+        fiveNAction fna;
+        if (fna.isSymmetric(currentBoard)) {
+            std::cout << "当前棋盘为中心对称，跳过五手N打搜索。\n";
+            return; // 跳过后续处理
+        }
+
         switch (N) {
         case 2: {
-            nodeBest = findNodeByPosition(candidatePoints[0].first, candidatePoints[0].second);
-            nodeSecond = findNodeByPosition(candidatePoints[1].first, candidatePoints[2].second);
+            //遍历子节点 寻找第二大值
+            nodeSecond = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
             break;
         }
         case 3: {
-            nodeBest = findNodeByPosition(candidatePoints[0].first, candidatePoints[0].second);
-            nodeSecond = findNodeByPosition(candidatePoints[1].first, candidatePoints[1].second);
-            nodeThird = findNodeByPosition(candidatePoints[2].first, candidatePoints[2].second);
+            //遍历子节点 寻找第二大值
+            nodeSecond = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+            //遍历子节点 寻找第三大值
+            nodeThird = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                    nodeThird = n;
             break;
         }
         case 4: {
-            nodeBest = findNodeByPosition(candidatePoints[0].first, candidatePoints[0].second);
-            nodeSecond = findNodeByPosition(candidatePoints[1].first, candidatePoints[1].second);
-            nodeThird = findNodeByPosition(candidatePoints[2].first, candidatePoints[2].second);
-            nodeFourth = findNodeByPosition(candidatePoints[3].first, candidatePoints[3].second);
+            //遍历子节点 寻找第二大值
+            nodeSecond = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+            //遍历子节点 寻找第三大值
+            nodeThird = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                    nodeThird = n;
+            //遍历子节点 寻找第四大值
+            nodeFourth = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                    && (n->value > nodeFourth->value))
+                    nodeFourth = n;
             break;
         }
         case 5: {
-            nodeBest = findNodeByPosition(candidatePoints[0].first, candidatePoints[0].second);
-            nodeSecond = findNodeByPosition(candidatePoints[1].first, candidatePoints[1].second);
-            nodeThird = findNodeByPosition(candidatePoints[2].first, candidatePoints[2].second);
-            nodeFourth = findNodeByPosition(candidatePoints[3].first, candidatePoints[3].second);
-            nodeFifth = findNodeByPosition(candidatePoints[4].first, candidatePoints[4].second);
+            //遍历子节点 寻找第二大值
+            nodeSecond = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+            //遍历子节点 寻找第三大值
+            nodeThird = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                    nodeThird = n;
+            //遍历子节点 寻找第四大值
+            nodeFourth = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                    && (n->value > nodeFourth->value))
+                    nodeFourth = n;
+            //遍历子节点 寻找第五大值
+            nodeFifth = *nodeRoot->children.begin();
+            for (Node *n : nodeRoot->children)
+                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                    && (n->value < nodeFourth->value) && (n->value > nodeFifth->value))
+                    nodeFifth = n;
             break;
         }
         }

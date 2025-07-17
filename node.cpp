@@ -214,3 +214,18 @@ void Node::evaluate(char choice)
             }
         }
 }
+
+std::vector<std::pair<int, int>> Node::getCurrentBoard() const
+{
+    std::vector<std::pair<int, int>> positions; //存储棋盘的棋子
+
+    //遍历棋盘，存放在position中
+    for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < 15; ++j) {
+            if (board[i][j] != 0) { // 非空格子即为落子
+                positions.emplace_back(i, j);
+            }
+        }
+    }
+    return positions;
+}

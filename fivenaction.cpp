@@ -1,4 +1,6 @@
 #include "fivenaction.h"
+#include <set>
+#include <iostream>
 
 //图形相似对称？
 bool fiveNAction::checkSymmetry(const std::vector<std::pair<uint8_t, uint8_t>> &mask)
@@ -22,4 +24,24 @@ bool fiveNAction::checkSymmetry(const std::vector<std::pair<uint8_t, uint8_t>> &
         }
     }
     return flag == size * (size - 1) / 2; //如果相等，那么对称，返回true
+}
+
+//检查棋盘是否中心对称
+bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
+{
+    std::set<std::pair<int, int>> posSet;
+    for (const auto& p : positions) {
+        posSet.insert(p);
+    }
+
+    for (const auto& p : positions) {
+        int symX = 14 - p.first;
+        int symY = 14 - p.second;
+        if (posSet.find({symX, symY}) == posSet.end()) {
+            std::cout << "不对称\n";
+            return false;
+        }
+    }
+    std::cout << "对称\n";
+    return true;
 }

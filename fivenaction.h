@@ -12,5 +12,6 @@ class fiveNAction
 public:
     fiveNAction() = default;
     bool checkSymmetry(const std::vector<std::pair<uint8_t, uint8_t>> &mask); //检查对称
-    //bool checkForbid();                                                       //检查留下的黑子是否有禁手，对于白方而言
+    //bool checkForbid();
+    bool isSymmetric(const std::vector<std::pair<int, int>> &positions);
 };
