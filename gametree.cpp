@@ -166,10 +166,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
         // 调用FiveNAction的isSymmetric函数判断当前棋盘是否对称
         std::cout << "FiveNAction执行:";
         fiveNAction fna;
-        if (fna.isSymmetric(currentBoard)) {
-            std::cout << "当前棋盘为中心对称，跳过五手N打搜索。\n";
-            return; // 跳过后续处理
-        }
+        fna.isSymmetric(currentBoard);
 
         switch (N) {
         case 2: {
