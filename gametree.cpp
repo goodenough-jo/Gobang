@@ -157,7 +157,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
         if (n->value > nodeBest->value) { nodeBest = n; }
     }
 
-    std::cout << "nodeBest:" << (int) nodeBest->fX << "," << (int) nodeBest->fY << "\n";
+    // std::cout << "nodeBest:" << (int) nodeBest->fX << "," << (int) nodeBest->fY << "\n";
 
     //若处于五手打N中
     if (five == 0) {
@@ -166,62 +166,110 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
 
         // 调用FiveNAction的isSymmetric函数判断当前棋盘是否对称
         fiveNAction fna;
-
         fna.getSymmetricPoint(currentBoard);
-        //对称返回false,不对称返回true
-        if (!fna.isSymmetric(currentBoard)) {
-            //
-            std::cout << "没有打点前的棋盘位置：\n";
-            for (std::pair<int, int> n : currentBoard) {
-                std::cout << n.first << ", " << n.second << "\n";
-            }
-            std::cout << "\n";
-            //
+        //对称返回true 不对称返回false
+        if (fna.isSymmetric(currentBoard)) {
+            //将nodeBest加入currentBoard中
             currentBoard.push_back({nodeBest->fX, nodeBest->fY});
-            //
-            std::cout << "currentBoard+bestNode:\n";
-            for (std::pair<int, int> n : currentBoard) {
-                std::cout << n.first << ", " << n.second << "\n";
-            }
-            std::cout << "\n";
 
-            //
             switch (N) {
             case 2: {
                 //遍历子节点 寻找第二大值
                 nodeSecond = *nodeRoot->children.begin();
                 for (Node *n : nodeRoot->children) {
-                    //
-                    std::cout << "n->vale:" << n->value << "\n";
-                    std::cout << "n:" << (int) n->fX << ", " << (int) n->fY << "\n\n";
-                    //
-                    currentBoard.push_back({n->fX, n->fY});
-                    //
-                    std::cout << "push:\n";
-                    for (std::pair<int, int> n : currentBoard) {
-                        std::cout << n.first << ", " << n.second << "\n";
-                    }
-                    std::cout << "\n";
-                    //
-                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)
-                        && (fna.isSymmetric(currentBoard))) {
+                    if (n->value == nodeBest->value) continue;
+                    // 构造一个临时棋盘，加入这个候选打点
+                    std::vector<std::pair<int, int>> testBoard = currentBoard;
+                    testBoard.push_back({n->fX, n->fY});
+
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value) && (!fna.isSymmetric(testBoard)))
                         nodeSecond = n;
-                    } else {
-                        currentBoard.pop_back();
-                        //
-                        std::cout << "pop:\n";
-                        for (std::pair<int, int> n : currentBoard) {
-                            std::cout << n.first << ", " << n.second << "\n";
-                        }
-                        std::cout << "\n";
-                        //
-                    }
                 }
-                // currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
-                // std::cout << "currentBoard+nodeBest+nodeSecond:\n";
-                // for (std::pair<int, int> n : currentBoard) {
-                //     std::cout << n.first << ", " << n.second << "\n";
-                // }
+
+                break;
+            }
+            case 3: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+                //当N==3时,currentBoard在加入nodeBest的前提下加入nodeSecond;nodeBest已经在if之前swich之后加入
+                currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
+
+                //遍历子节点 寻找第三大值
+                nodeThird = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children) {
+                    if (n->value == nodeBest->value || n->value == nodeSecond->value) continue;
+
+                    // 构造一个临时棋盘，加入这个候选打点
+                    std::vector<std::pair<int, int>> testBoard = currentBoard;
+                    testBoard.push_back({n->fX, n->fY});
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value)
+                        && (!fna.isSymmetric(testBoard)))
+                        nodeThird = n;
+                }
+                break;
+            }
+            case 4: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+                currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
+                //遍历子节点 寻找第三大值
+                nodeThird = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                        nodeThird = n;
+                currentBoard.push_back({nodeThird->fX, nodeThird->fY});
+                //遍历子节点 寻找第四大值
+                nodeFourth = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children) {
+                    if (n->value == nodeBest->value || n->value == nodeSecond->value || n->value == nodeThird->value)
+                        continue;
+
+                    // 构造一个临时棋盘，加入这个候选打点
+                    std::vector<std::pair<int, int>> testBoard = currentBoard;
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                        && (n->value > nodeFourth->value) && (!fna.isSymmetric(testBoard)))
+                        nodeFourth = n;
+                }
+                break;
+            }
+            case 5: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+                currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
+
+                //遍历子节点 寻找第三大值
+                nodeThird = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                        nodeThird = n;
+                currentBoard.push_back({nodeThird->fX, nodeThird->fY});
+                //遍历子节点 寻找第四大值
+                nodeFourth = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                        && (n->value > nodeFourth->value))
+                        nodeFourth = n;
+                currentBoard.push_back({nodeFourth->fX, nodeFourth->fY});
+                //遍历子节点 寻找第五大值
+                nodeFifth = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children) {
+                    if (n->value == nodeBest->value || n->value == nodeSecond->value || n->value == nodeThird->value
+                        || n->value == nodeFourth->value)
+                        continue;
+
+                    // 构造一个临时棋盘，加入这个候选打点
+                    std::vector<std::pair<int, int>> testBoard = currentBoard;
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                        && (n->value < nodeFourth->value) && (n->value > nodeFifth->value)
+                        && (!fna.isSymmetric(testBoard)))
+                        nodeFifth = n;
+                }
                 break;
             }
             }

@@ -29,41 +29,13 @@ bool fiveNAction::checkSymmetry(const std::vector<std::pair<uint8_t, uint8_t>> &
 //检查棋盘是否中心对称
 bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
 {
-    /*
-    // 创建一个集合来存储所有已下棋子的坐标
-    std::set<std::pair<int, int>> posSet;
-    std::cout << "当前棋盘位置：\n";
-    for (const auto& p : positions) {
-        std::cout << "\n" << p.first << " " << p.second << "\n";
-        posSet.insert(p);
-    }
+    bool isCenterSymmetric = true;
+    bool isVerticalSymmetric = true;
+    bool isHorizontalSymmetric = true;
 
-    // 假设我们根据棋子的分布计算一个对称中心
-
-    float centerX = 0, centerY = 0;
-    int count = positions.size();
-
-    // 计算所有棋子的平均位置（重心）
-    for (const auto& p : positions) {
-        centerX += p.first;
-        centerY += p.second;
-    }
-
-    // std::cout << "计算前centerX与centerY：" << centerX << " " << centerY << "\n";
-
-    // std::cout << "count:" << count << "\n";
-    
-    // 计算重心的坐标，作为对称中心
-    centerX /= count;
-    centerY /= count;
-    symmetricPoint = {centerX, centerY};
-    // std::cout << "symmetricPoint：" << symmetricPoint.first << " " << symmetricPoint.second << "\n";
-    */
     // 逐个检查每个棋子是否有对应的对称棋子
     std::set<std::pair<int, int>> posSet;
-    // std::cout << "当前棋盘位置：\n";
     for (const auto& p : positions) {
-        // std::cout << "\n" << p.first << " " << p.second << "\n";
         posSet.insert(p);
     }
 
@@ -72,30 +44,28 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
         int symX_center = 2 * symmetricPoint.first - p.first;   // 对称位置
         int symY_center = 2 * symmetricPoint.second - p.second; // 对称位置
 
-        if (posSet.find({symX_center, symY_center}) != posSet.end()) {
-            std::cout << "找到符合中心对称的点：(" << symX_center << ", " << symY_center << ")\n";
-            std::cout << "中心对称\n\n";
-            return false;
-        }
+        if (posSet.find({symX_center, symY_center}) == posSet.end()) { isCenterSymmetric = false; }
 
-        //计算垂直轴对称
+        //计算垂直轴对称，由于是node的xy与棋盘是相反的，所以垂直即是棋盘的水平
         int symX_vertical = 2 * symmetricPoint.first - p.first;
         int symY_vertical = p.second;
-        if (posSet.find({symX_vertical, symY_vertical}) != posSet.end()) {
-            std::cout << "找到垂直轴对称点：(" << symX_vertical << ", " << symY_vertical << ")\n";
-            return false;
-        }
+        if (posSet.find({symX_vertical, symY_vertical}) == posSet.end()) { isVerticalSymmetric = false; }
 
-        //计算水平轴对称
+        //计算水平轴对称，同理
         int symX_horizontal = p.first;
         int symY_horizontal = 2 * symmetricPoint.second - p.second;
-        if (posSet.find({symX_horizontal, symY_horizontal}) != posSet.end()) {
-            std::cout << "找到水平轴对称点：(" << symX_horizontal << ", " << symY_horizontal << ")\n";
-            return false;
-        }
+        if (posSet.find({symX_horizontal, symY_horizontal}) == posSet.end()) { isHorizontalSymmetric = false; }
     }
-    std::cout << "不对称\n";
-    return true;
+    if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric) {
+        // std::cout << "该局面具有如下对称性：\n";
+        // if (isCenterSymmetric) std::cout << "- 中心对称\n";
+        // if (isVerticalSymmetric) std::cout << "- 水平轴对称\n";
+        // if (isHorizontalSymmetric) std::cout << "- 垂直轴对称\n";
+        return true;
+    }
+
+    // std::cout << "不对称\n";
+    return false;
 }
 
 void fiveNAction::getSymmetricPoint(const std::vector<std::pair<int, int>>& positions)
@@ -110,13 +80,9 @@ void fiveNAction::getSymmetricPoint(const std::vector<std::pair<int, int>>& posi
         centerY += p.second;
     }
 
-    // std::cout << "计算前centerX与centerY：" << centerX << " " << centerY << "\n";
-
-    // std::cout << "count:" << count << "\n";
-
     // 计算重心的坐标，作为对称中心
     centerX /= count;
     centerY /= count;
     symmetricPoint = {centerX, centerY};
-    std::cout << "symmetricPoint:" << symmetricPoint.first << ", " << symmetricPoint.second << "\n";
+    // std::cout << "symmetricPoint:" << symmetricPoint.first << ", " << symmetricPoint.second << "\n";
 }
