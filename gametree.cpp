@@ -148,15 +148,16 @@ Node *GameTree::findNodeByPosition(uint8_t x, uint8_t y)
 }
 
 //寻找下一步的最佳落棋点，即寻找根节点的最佳子节点
-//改对称的必要，需要改节点--------------------------------------------------------------------------------
-//注意前方石山代码-----------------------------------------
 void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整数表示不五手N打 n表示五手n打
 {
     //    初始化nodeBest为nodeRoot的第一个子节点;
     nodeBest = *nodeRoot->children.begin();
     //遍历子节点 寻找最大值
-    for (Node *n : nodeRoot->children)
-        if (n->value > nodeBest->value) nodeBest = n;
+    for (Node *n : nodeRoot->children) {
+        if (n->value > nodeBest->value) { nodeBest = n; }
+    }
+
+    std::cout << "nodeBest:" << (int) nodeBest->fX << "," << (int) nodeBest->fY << "\n";
 
     //若处于五手打N中
     if (five == 0) {
@@ -164,72 +165,131 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
         std::vector<std::pair<int, int>> currentBoard = this->nodeRoot->getCurrentBoard();
 
         // 调用FiveNAction的isSymmetric函数判断当前棋盘是否对称
-        std::cout << "FiveNAction执行:";
         fiveNAction fna;
-        fna.isSymmetric(currentBoard);
 
-        switch (N) {
-        case 2: {
-            //遍历子节点 寻找第二大值
-            nodeSecond = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
-            break;
-        }
-        case 3: {
-            //遍历子节点 寻找第二大值
-            nodeSecond = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
-            //遍历子节点 寻找第三大值
-            nodeThird = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
-                    nodeThird = n;
-            break;
-        }
-        case 4: {
-            //遍历子节点 寻找第二大值
-            nodeSecond = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
-            //遍历子节点 寻找第三大值
-            nodeThird = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
-                    nodeThird = n;
-            //遍历子节点 寻找第四大值
-            nodeFourth = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
-                    && (n->value > nodeFourth->value))
-                    nodeFourth = n;
-            break;
-        }
-        case 5: {
-            //遍历子节点 寻找第二大值
-            nodeSecond = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
-            //遍历子节点 寻找第三大值
-            nodeThird = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
-                    nodeThird = n;
-            //遍历子节点 寻找第四大值
-            nodeFourth = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
-                    && (n->value > nodeFourth->value))
-                    nodeFourth = n;
-            //遍历子节点 寻找第五大值
-            nodeFifth = *nodeRoot->children.begin();
-            for (Node *n : nodeRoot->children)
-                if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
-                    && (n->value < nodeFourth->value) && (n->value > nodeFifth->value))
-                    nodeFifth = n;
-            break;
-        }
+        fna.getSymmetricPoint(currentBoard);
+        //对称返回false,不对称返回true
+        if (!fna.isSymmetric(currentBoard)) {
+            //
+            std::cout << "没有打点前的棋盘位置：\n";
+            for (std::pair<int, int> n : currentBoard) {
+                std::cout << n.first << ", " << n.second << "\n";
+            }
+            std::cout << "\n";
+            //
+            currentBoard.push_back({nodeBest->fX, nodeBest->fY});
+            //
+            std::cout << "currentBoard+bestNode:\n";
+            for (std::pair<int, int> n : currentBoard) {
+                std::cout << n.first << ", " << n.second << "\n";
+            }
+            std::cout << "\n";
+
+            //
+            switch (N) {
+            case 2: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children) {
+                    //
+                    std::cout << "n->vale:" << n->value << "\n";
+                    std::cout << "n:" << (int) n->fX << ", " << (int) n->fY << "\n\n";
+                    //
+                    currentBoard.push_back({n->fX, n->fY});
+                    //
+                    std::cout << "push:\n";
+                    for (std::pair<int, int> n : currentBoard) {
+                        std::cout << n.first << ", " << n.second << "\n";
+                    }
+                    std::cout << "\n";
+                    //
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)
+                        && (fna.isSymmetric(currentBoard))) {
+                        nodeSecond = n;
+                    } else {
+                        currentBoard.pop_back();
+                        //
+                        std::cout << "pop:\n";
+                        for (std::pair<int, int> n : currentBoard) {
+                            std::cout << n.first << ", " << n.second << "\n";
+                        }
+                        std::cout << "\n";
+                        //
+                    }
+                }
+                // currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
+                // std::cout << "currentBoard+nodeBest+nodeSecond:\n";
+                // for (std::pair<int, int> n : currentBoard) {
+                //     std::cout << n.first << ", " << n.second << "\n";
+                // }
+                break;
+            }
+            }
+
+        } else {
+            switch (N) {
+            case 2: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+                break;
+            }
+            case 3: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+                //遍历子节点 寻找第三大值
+                nodeThird = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                        nodeThird = n;
+                break;
+            }
+            case 4: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+                //遍历子节点 寻找第三大值
+                nodeThird = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                        nodeThird = n;
+                //遍历子节点 寻找第四大值
+                nodeFourth = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                        && (n->value > nodeFourth->value))
+                        nodeFourth = n;
+                break;
+            }
+            case 5: {
+                //遍历子节点 寻找第二大值
+                nodeSecond = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
+                //遍历子节点 寻找第三大值
+                nodeThird = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value > nodeThird->value))
+                        nodeThird = n;
+                //遍历子节点 寻找第四大值
+                nodeFourth = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                        && (n->value > nodeFourth->value))
+                        nodeFourth = n;
+                //遍历子节点 寻找第五大值
+                nodeFifth = *nodeRoot->children.begin();
+                for (Node *n : nodeRoot->children)
+                    if ((n->value < nodeBest->value) && (n->value < nodeSecond->value) && (n->value < nodeThird->value)
+                        && (n->value < nodeFourth->value) && (n->value > nodeFifth->value))
+                        nodeFifth = n;
+                break;
+            }
+            }
         }
     }
 }

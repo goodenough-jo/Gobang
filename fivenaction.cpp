@@ -29,17 +29,17 @@ bool fiveNAction::checkSymmetry(const std::vector<std::pair<uint8_t, uint8_t>> &
 //检查棋盘是否中心对称
 bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
 {
+    /*
     // 创建一个集合来存储所有已下棋子的坐标
     std::set<std::pair<int, int>> posSet;
+    std::cout << "当前棋盘位置：\n";
     for (const auto& p : positions) {
         std::cout << "\n" << p.first << " " << p.second << "\n";
         posSet.insert(p);
     }
 
     // 假设我们根据棋子的分布计算一个对称中心
-    /*这里有一个疑问：如果计算的点小数点不是0.5怎么办？
-     * 
-     */
+
     float centerX = 0, centerY = 0;
     int count = positions.size();
 
@@ -49,29 +49,74 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
         centerY += p.second;
     }
 
-    std::cout << "计算前centerX与centerY：" << centerX << " " << centerY << "\n";
+    // std::cout << "计算前centerX与centerY：" << centerX << " " << centerY << "\n";
 
-    std::cout << "count:" << count << "\n";
+    // std::cout << "count:" << count << "\n";
+    
+    // 计算重心的坐标，作为对称中心
+    centerX /= count;
+    centerY /= count;
+    symmetricPoint = {centerX, centerY};
+    // std::cout << "symmetricPoint：" << symmetricPoint.first << " " << symmetricPoint.second << "\n";
+    */
+    // 逐个检查每个棋子是否有对应的对称棋子
+    std::set<std::pair<int, int>> posSet;
+    // std::cout << "当前棋盘位置：\n";
+    for (const auto& p : positions) {
+        // std::cout << "\n" << p.first << " " << p.second << "\n";
+        posSet.insert(p);
+    }
+
+    for (const auto& p : positions) {
+        // 计算中心对称
+        int symX_center = 2 * symmetricPoint.first - p.first;   // 对称位置
+        int symY_center = 2 * symmetricPoint.second - p.second; // 对称位置
+
+        if (posSet.find({symX_center, symY_center}) != posSet.end()) {
+            std::cout << "找到符合中心对称的点：(" << symX_center << ", " << symY_center << ")\n";
+            std::cout << "中心对称\n\n";
+            return false;
+        }
+
+        //计算垂直轴对称
+        int symX_vertical = 2 * symmetricPoint.first - p.first;
+        int symY_vertical = p.second;
+        if (posSet.find({symX_vertical, symY_vertical}) != posSet.end()) {
+            std::cout << "找到垂直轴对称点：(" << symX_vertical << ", " << symY_vertical << ")\n";
+            return false;
+        }
+
+        //计算水平轴对称
+        int symX_horizontal = p.first;
+        int symY_horizontal = 2 * symmetricPoint.second - p.second;
+        if (posSet.find({symX_horizontal, symY_horizontal}) != posSet.end()) {
+            std::cout << "找到水平轴对称点：(" << symX_horizontal << ", " << symY_horizontal << ")\n";
+            return false;
+        }
+    }
+    std::cout << "不对称\n";
+    return true;
+}
+
+void fiveNAction::getSymmetricPoint(const std::vector<std::pair<int, int>>& positions)
+{
+    // 我们根据棋子的分布计算一个对称中心
+    float centerX = 0, centerY = 0;
+    int count = positions.size();
+
+    // 计算所有棋子的平均位置（重心）
+    for (const auto& p : positions) {
+        centerX += p.first;
+        centerY += p.second;
+    }
+
+    // std::cout << "计算前centerX与centerY：" << centerX << " " << centerY << "\n";
+
+    // std::cout << "count:" << count << "\n";
 
     // 计算重心的坐标，作为对称中心
     centerX /= count;
     centerY /= count;
-
-    std::cout << "对称点位置：" << centerX << " " << centerY << "\n";
-
-    // 逐个检查每个棋子是否有对应的对称棋子
-    for (const auto& p : positions) {
-        // 计算与当前棋子对称的位置
-        int symX = 2 * centerX - p.first;  // 对称位置
-        int symY = 2 * centerY - p.second; // 对称位置
-
-        // 如果对称点在集合中，说明这两个点形成了对称对
-        if (posSet.find({symX, symY}) == posSet.end()) {
-            // 如果没有找到对应的对称点，返回 false
-            std::cout << "不对称\n";
-            return false;
-        }
-    }
-    std::cout << "对称\n";
-    return true; // 如果所有点都有对应的对称点，返回 true
+    symmetricPoint = {centerX, centerY};
+    std::cout << "symmetricPoint:" << symmetricPoint.first << ", " << symmetricPoint.second << "\n";
 }
