@@ -455,6 +455,30 @@ void designatedStartP()
         {
             vector<pair<uint8_t, uint8_t>> needSelection; //存放黑方的N个打点坐标
 
+            //---------------自己加的
+            std::vector<std::pair<int, int>> positions; //存储棋盘的棋子
+            //遍历棋盘，存放在position中,以检查对称
+            //原先的棋盘x,y与i.first,i.second相对应
+            for (int i = 0; i < 15; ++i) {
+                for (int j = 0; j < 15; ++j) {
+                    if (board[i][j] != 0) { // 非空格子即为落子
+                        positions.emplace_back(i, j);
+                    }
+                }
+            }
+            //调试信息:打印未打点前棋盘的坐标
+            std::cout << "打印未打点前棋盘的坐标:\n";
+            for (std::pair<int, int> i : positions) {
+                cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                std::cout << i.second << ", " << i.first << "\n";
+            }
+            //计算原有棋盘的重心
+            fiveNAction judge;
+            judge.getSymmetricPoint(positions);
+            //调试信息:输出原棋盘的重心
+            std::cout << "原棋盘的重心:\n";
+            std::cout << "SymmetriPoint:" << judge.symmetricPoint.first << ", " << judge.symmetricPoint.second << "\n";
+            //-----------
             cout << "请输入黑方的打点坐标" << endl;
             cout << "黑方棋子的横坐标,纵坐标分别为：" << endl;
             for (uint32_t i = 0; i < N; i++) {
@@ -464,7 +488,16 @@ void designatedStartP()
                 y = (uint32_t) (_x - 'A');
                 //存储转换后的坐标值
                 needSelection.emplace_back(pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y));
+                //-----------将打点放入postions中,以判断对称 保证了positions没有因x,y的变换而污染
+                positions.emplace_back(pair<int, int>((int) x, (int) y));
+                //调试信息:判断打点位置是否正确
+                std::cout << "打印打点棋盘的坐标:\n";
+                for (std::pair<int, int> i : positions) {
+                    cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                    std::cout << i.second << ", " << i.first << "\n";
+                }
 
+                //------------------
                 while (board[x][y] != 0 || x > 14 || y > 14) {
                     cout << "黑方落子点位置不合法,请重新输入： \n";
                     cout << "黑方棋子的横坐标,纵坐标分别为：";
@@ -478,6 +511,16 @@ void designatedStartP()
             }
             cout << "输入结束" << endl;
 
+            //--------------已经收集完成打点位置与棋盘棋子的所有坐标
+            if (judge.isSymmetric(positions)) {
+                std::cout << "对方打点对称!\n";
+            } else {
+                std::cout << "未检查到对方打点对称.\n";
+            }
+            //检查打点位置是否对称
+
+            //---------------
+            /*
             //检查黑方打点位置是否对称---------------------------------------------------------------------------
             int ack = 1;
             auto vp = std::make_unique<fiveNAction>(); //访问指针
@@ -493,7 +536,7 @@ void designatedStartP()
                 break;
             }
             //检查黑方打点位置是否对称---------------------------------------------------------------------------
-
+            */
             //计算黑方每一个N点 确定每一个点下之后白方选择最优节点的估值 将估值放入一个容器中
             vector<int32_t> selectValues;
             for (unsigned long k = 0; k < needSelection.size(); k++) {

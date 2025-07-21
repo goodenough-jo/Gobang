@@ -157,16 +157,26 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
         if (n->value > nodeBest->value) { nodeBest = n; }
     }
 
-    // std::cout << "nodeBest:" << (int) nodeBest->fX << "," << (int) nodeBest->fY << "\n";
 
     //若处于五手打N中
     if (five == 0) {
         //先判断棋盘是否对称
         std::vector<std::pair<int, int>> currentBoard = this->nodeRoot->getCurrentBoard();
-
+        //-------调试 判断当前棋盘的点是否合理
+        std::cout << "打印未打点前棋盘的坐标:\n";
+        //这里的坐标点i.first,i.second对应着y,x
+        for (std::pair<int, int> i : currentBoard) {
+            cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+            std::cout << i.second << ", " << i.first << "\n";
+        }
+        //------------------
         // 调用FiveNAction的isSymmetric函数判断当前棋盘是否对称
         fiveNAction fna;
         fna.getSymmetricPoint(currentBoard);
+        //------------调试 计算重心,以棋盘的x,y为准
+        std::cout << "重心:\n";
+        std::cout << fna.symmetricPoint.second << ", " << fna.symmetricPoint.first << "\n";
+        //-------------
         //对称返回true 不对称返回false
         if (fna.isSymmetric(currentBoard)) {
             //将nodeBest加入currentBoard中
@@ -177,6 +187,12 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                 //遍历子节点 寻找第二大值
                 nodeSecond = *nodeRoot->children.begin();
                 for (Node *n : nodeRoot->children) {
+                    //---------调试信息,检验是否能正确判断对称
+
+                    cout << "n->value: " << n->value << "\n";
+                    cout << "(" << (uint8_t) (n->fY + 'A') << "," << 15 - n->fX << ")" << endl;
+                    cout << (int) n->fY << ", " << (int) n->fX << "\n\n";
+                    //----------------
                     if (n->value == nodeBest->value) continue;
                     // 构造一个临时棋盘，加入这个候选打点
                     std::vector<std::pair<int, int>> testBoard = currentBoard;
