@@ -35,32 +35,30 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
     bool isDiagonalSymmetric45 = true;
     bool isDiagonalSymmetric135 = true;
 
-    std::set<std::pair<int, int>> posSet(positions.begin(), positions.end());
+    // 逐个检查每个棋子是否有对应的对称棋子
+    std::set<std::pair<int, int>> posSet;
+    for (const auto& p : positions) {
+        posSet.insert(p);
+    }
 
     for (const auto& p : positions) {
-        int x = p.first;
-        int y = p.second;
-
-        int cx = symmetricPoint.first;
-        int cy = symmetricPoint.second;
-
         // 中心对称
-        int x_center = 2 * cx - x;
-        int y_center = 2 * cy - y;
-        if (posSet.find({x_center, y_center}) == posSet.end()) isCenterSymmetric = false;
+        int symX_center = 2 * symmetricPoint.first - p.first;   // 对称位置
+        int symY_center = 2 * symmetricPoint.second - p.second; // 对称位置
+        if (posSet.find({symX_center, symY_center}) == posSet.end()) { isCenterSymmetric = false; }
 
         // 垂直轴对称（x轴翻转）
-        int x_vertical = 2 * cx - x;
-        int y_vertical = y;
-        if (posSet.find({x_vertical, y_vertical}) == posSet.end()) isVerticalSymmetric = false;
+        int symX_vertical = 2 * symmetricPoint.first - p.first;
+        int symY_vertical = p.second;
+        if (posSet.find({symX_vertical, symY_vertical}) == posSet.end()) { isVerticalSymmetric = false; }
 
-        // 水平轴对称（y轴翻转）
-        int x_horizontal = x;
-        int y_horizontal = 2 * cy - y;
-        if (posSet.find({x_horizontal, y_horizontal}) == posSet.end()) isHorizontalSymmetric = false;
+        //计算水平轴对称，同理
+        int symX_horizontal = p.first;
+        int symY_horizontal = 2 * symmetricPoint.second - p.second;
+        if (posSet.find({symX_horizontal, symY_horizontal}) == posSet.end()) { isHorizontalSymmetric = false; }
 
         // 主对角线 ↘ 判断: y - x = y' - x'，排除自身
-        int value45 = y - x;
+        int value45 = p.second - p.first;
         bool found45 = false;
         for (const auto& q : posSet) {
             if (q == p) continue; // 排除自身
@@ -72,7 +70,7 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
         if (!found45) isDiagonalSymmetric45 = false;
 
         // 副对角线 ↙ 判断: y + x = x' + y'，排除自身
-        int value135 = y + x;
+        int value135 = p.second + p.first;
         bool found135 = false;
         for (const auto& q : posSet) {
             if (q == p) continue; // 排除自身
@@ -84,8 +82,8 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
         if (!found135) isDiagonalSymmetric135 = false;
     }
 
-    if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric || isDiagonalSymmetric45
-        || isDiagonalSymmetric135) {
+    if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric || isDiagonalSymmetric135
+        || isDiagonalSymmetric45) {
         std::cout << "该局面具有如下对称性：\n";
         if (isCenterSymmetric) std::cout << "- 中心对称\n";
         if (isVerticalSymmetric) std::cout << "- 水平轴对称\n";
@@ -97,7 +95,9 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
 
     std::cout << "不对称\n";
     return false;
-    /*
+}
+
+/*
     bool isCenterSymmetric = true;
     bool isVerticalSymmetric = true;
     bool isHorizontalSymmetric = true;
@@ -141,7 +141,6 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
     std::cout << "不对称\n";
     return false;
     */
-}
 
 void fiveNAction::getSymmetricPoint(const std::vector<std::pair<int, int>>& positions)
 {
