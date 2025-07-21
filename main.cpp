@@ -456,7 +456,9 @@ void designatedStartP()
             vector<pair<uint8_t, uint8_t>> needSelection; //存放黑方的N个打点坐标
 
             //---------------自己加的
+            fiveNAction judge;
             std::vector<std::pair<int, int>> positions; //存储棋盘的棋子
+            judge.getBlackPostions(board);              //获取未打点前的所有黑棋坐标
             //遍历棋盘，存放在position中,以检查对称
             //原先的棋盘x,y与i.first,i.second相对应
             for (int i = 0; i < 15; ++i) {
@@ -472,13 +474,23 @@ void designatedStartP()
                 cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
                 std::cout << i.second << ", " << i.first << "\n";
             }
+            //调试信息:打印黑子的坐标
+            std::cout << "打印未打点前黑子棋盘的坐标:\n";
+            for (std::pair<int, int> i : judge.blackPositions) {
+                cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                std::cout << i.second << ", " << i.first << "\n";
+            }
             //计算原有棋盘的重心
-            fiveNAction judge;
             judge.getSymmetricPoint(positions);
-            //调试信息:输出原棋盘的重心
+            //计算黑子的重心
+            judge.getBlackSymmetricPoint();
+            //调试信息:输出原棋盘的重心,以棋盘x,y为准
             std::cout << "原棋盘的重心:\n";
-            std::cout << "SymmetriPoint:" << judge.symmetricPoint.first << ", " << judge.symmetricPoint.second << "\n";
-            //-----------
+            std::cout << "SymmetriPoint:" << judge.symmetricPoint.second << ", " << judge.symmetricPoint.first << "\n";
+            std::cout << "原棋盘黑子对称点:\n";
+            std::cout << "SymmetriPoint:" << judge.blackSymmetricPoint.second << ", " << judge.blackSymmetricPoint.first
+                      << "\n";
+            //------------------------
             cout << "请输入黑方的打点坐标" << endl;
             cout << "黑方棋子的横坐标,纵坐标分别为：" << endl;
             for (uint32_t i = 0; i < N; i++) {
@@ -490,13 +502,20 @@ void designatedStartP()
                 needSelection.emplace_back(pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y));
                 //-----------将打点放入postions中,以判断对称 保证了positions没有因x,y的变换而污染
                 positions.emplace_back(pair<int, int>((int) x, (int) y));
+                //同时添加打点到黑棋中
+                judge.blackPositions.emplace_back(pair<int, int>((int) x, (int) y));
                 //调试信息:判断打点位置是否正确
                 std::cout << "打印打点棋盘的坐标:\n";
                 for (std::pair<int, int> i : positions) {
                     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
                     std::cout << i.second << ", " << i.first << "\n";
                 }
-
+                //调试信息:判断收集的黑子是否正确
+                std::cout << "打印黑子棋盘的坐标:\n";
+                for (std::pair<int, int> i : judge.blackPositions) {
+                    cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                    std::cout << i.second << ", " << i.first << "\n";
+                }
                 //------------------
                 while (board[x][y] != 0 || x > 14 || y > 14) {
                     cout << "黑方落子点位置不合法,请重新输入： \n";
@@ -512,8 +531,18 @@ void designatedStartP()
             cout << "输入结束" << endl;
 
             //--------------已经收集完成打点位置与棋盘棋子的所有坐标
+            //先判断棋盘是否对称
             if (judge.isSymmetric(positions)) {
-                std::cout << "对方打点对称!\n";
+                //如果重心与黑子对称点相同则该打点也是对称的
+                if (judge.blackSymmetricPoint == judge.symmetricPoint) {
+                    std::cout << "检测到对方对称!\n";
+                } else {
+                    if ((judge.isBlackSymmetric(judge.blackPositions) && judge.isSymmetric(positions))) {
+                        std::cout << "检查到对方对称!\n";
+                    } else {
+                        std::cout << "未检测到对方对称!\n";
+                    }
+                }
             } else {
                 std::cout << "未检查到对方打点对称.\n";
             }

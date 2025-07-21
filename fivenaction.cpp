@@ -161,3 +161,110 @@ void fiveNAction::getSymmetricPoint(const std::vector<std::pair<int, int>>& posi
     symmetricPoint = {centerX, centerY};
     // std::cout << "symmetricPoint:" << symmetricPoint.first << ", " << symmetricPoint.second << "\n";
 }
+
+//---------------------收集黑棋坐标
+std::vector<std::pair<int, int>> fiveNAction::getBlackPostions(const uint8_t board[15][15])
+{
+    blackPositions.clear(); // 清空旧数据
+    //遍历棋盘，存放在position中
+    for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < 15; ++j) {
+            if (board[i][j] == 'B') { // 黑棋
+                blackPositions.emplace_back(i, j);
+            }
+        }
+    }
+    return blackPositions;
+}
+
+//计算黑子的对称点
+void fiveNAction::getBlackSymmetricPoint()
+{
+    // 我们根据棋子的分布计算一个对称中心
+    float centerX = 0, centerY = 0;
+    int count = blackPositions.size();
+
+    // 计算所有棋子的平均位置（重心）
+    for (const auto& p : blackPositions) {
+        centerX += p.first;
+        centerY += p.second;
+    }
+
+    // 计算重心的坐标，作为对称中心
+    centerX /= count;
+    centerY /= count;
+    blackSymmetricPoint = {centerX, centerY};
+}
+
+bool fiveNAction::isBlackSymmetric(const std::vector<std::pair<int, int>>& positions)
+{
+    bool isCenterSymmetric = true;
+    bool isVerticalSymmetric = true;
+    bool isHorizontalSymmetric = true;
+    bool isDiagonalSymmetric45 = true;
+    bool isDiagonalSymmetric135 = true;
+
+    std::set<std::pair<int, int>> posSet(positions.begin(), positions.end());
+
+    for (const auto& p : positions) {
+        int x = p.first;
+        int y = p.second;
+
+        int cx = blackSymmetricPoint.first;
+        int cy = blackSymmetricPoint.second;
+
+        // 中心对称
+        int x_center = 2 * cx - x;
+        int y_center = 2 * cy - y;
+        if (posSet.find({x_center, y_center}) == posSet.end()) isCenterSymmetric = false;
+
+        // 垂直轴对称（x轴翻转）
+        int x_vertical = 2 * cx - x;
+        int y_vertical = y;
+        if (posSet.find({x_vertical, y_vertical}) == posSet.end()) isVerticalSymmetric = false;
+
+        // 水平轴对称（y轴翻转）
+        int x_horizontal = x;
+        int y_horizontal = 2 * cy - y;
+        if (posSet.find({x_horizontal, y_horizontal}) == posSet.end()) isHorizontalSymmetric = false;
+
+        // 主对角线 ↘ 判断: y - x = y' - x'，排除自身
+        int value45 = y - x;
+        bool found45 = false;
+        for (const auto& q : posSet) {
+            if (q == p) continue; // 排除自身
+            if ((q.second - q.first) == value45) {
+                found45 = true;
+                break;
+            }
+        }
+        if (!found45) isDiagonalSymmetric45 = false;
+
+        // 副对角线 ↙ 判断: y + x = x' + y'，排除自身
+        int value135 = y + x;
+        bool found135 = false;
+        for (const auto& q : posSet) {
+            if (q == p) continue; // 排除自身
+            if ((q.first + q.second) == value135) {
+                found135 = true;
+                break;
+            }
+        }
+        if (!found135) isDiagonalSymmetric135 = false;
+    }
+
+    if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric || isDiagonalSymmetric45
+        || isDiagonalSymmetric135) {
+        std::cout << "该局面具有如下对称性：\n";
+        if (isCenterSymmetric) std::cout << "- 中心对称\n";
+        if (isVerticalSymmetric) std::cout << "- 水平轴对称\n";
+        if (isHorizontalSymmetric) std::cout << "- 垂直轴对称\n";
+        if (isDiagonalSymmetric45) std::cout << "- 主对角线（↘）对称 (y - x = 常数)\n";
+        if (isDiagonalSymmetric135) std::cout << "- 副对角线（↙）对称 (y + x = 常数)\n";
+        return true;
+    }
+
+    std::cout << "不对称\n";
+    return false;
+}
+//------------------
