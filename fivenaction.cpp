@@ -84,16 +84,16 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
 
     if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric || isDiagonalSymmetric135
         || isDiagonalSymmetric45) {
-        std::cout << "该局面具有如下对称性：\n";
-        if (isCenterSymmetric) std::cout << "- 中心对称\n";
-        if (isVerticalSymmetric) std::cout << "- 水平轴对称\n";
-        if (isHorizontalSymmetric) std::cout << "- 垂直轴对称\n";
-        if (isDiagonalSymmetric45) std::cout << "- 主对角线（↘）对称 (y - x = 常数)\n";
-        if (isDiagonalSymmetric135) std::cout << "- 副对角线（↙）对称 (y + x = 常数)\n";
+        // std::cout << "该局面具有如下对称性：\n";
+        // if (isCenterSymmetric) std::cout << "- 中心对称\n";
+        // if (isVerticalSymmetric) std::cout << "- 水平轴对称\n";
+        // if (isHorizontalSymmetric) std::cout << "- 垂直轴对称\n";
+        // if (isDiagonalSymmetric45) std::cout << "- 主对角线（↘）对称 (y - x = 常数)\n";
+        // if (isDiagonalSymmetric135) std::cout << "- 副对角线（↙）对称 (y + x = 常数)\n";
         return true;
     }
 
-    std::cout << "不对称\n";
+    // std::cout << "不对称\n";
     return false;
 }
 
@@ -207,16 +207,16 @@ bool fiveNAction::isBlackSymmetric(const std::vector<std::pair<int, int>>& posit
 
     if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric || isDiagonalSymmetric135
         || isDiagonalSymmetric45) {
-        std::cout << "该局面具有如下对称性：\n";
-        if (isCenterSymmetric) std::cout << "- 中心对称\n";
-        if (isVerticalSymmetric) std::cout << "- 水平轴对称\n";
-        if (isHorizontalSymmetric) std::cout << "- 垂直轴对称\n";
-        if (isDiagonalSymmetric45) std::cout << "- 主对角线（↘）对称 (y - x = 常数)\n";
-        if (isDiagonalSymmetric135) std::cout << "- 副对角线（↙）对称 (y + x = 常数)\n";
+        // std::cout << "该局面具有如下对称性：\n";
+        // if (isCenterSymmetric) std::cout << "- 中心对称\n";
+        // if (isVerticalSymmetric) std::cout << "- 水平轴对称\n";
+        // if (isHorizontalSymmetric) std::cout << "- 垂直轴对称\n";
+        // if (isDiagonalSymmetric45) std::cout << "- 主对角线（↘）对称 (y - x = 常数)\n";
+        // if (isDiagonalSymmetric135) std::cout << "- 副对角线（↙）对称 (y + x = 常数)\n";
         return true;
     }
 
-    std::cout << "不对称\n";
+    // std::cout << "不对称\n";
     return false;
 }
 //------------------
