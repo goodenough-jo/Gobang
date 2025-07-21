@@ -335,6 +335,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                         std::vector<std::pair<int, int>> testBoard = currentBoard;
                         std::vector<std::pair<int, int>> testBlackBoard = fna.blackPositions;
                         testBoard.push_back({n->fX, n->fY});
+                        testBlackBoard.push_back({n->fX, n->fY});
                         //-------------------
                         if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)
                             && (!(fna.isSymmetric(testBoard) && fna.isBlackSymmetric(testBlackBoard))))
@@ -348,7 +349,6 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                     nodeSecond = *nodeRoot->children.begin();
                     for (Node *n : nodeRoot->children)
                         if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
-                    //当N==3时,currentBoard在加入nodeBest的前提下加入nodeSecond;nodeBest已经在if之前swich之后加入
                     currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
                     fna.blackPositions.push_back({nodeSecond->fX, nodeSecond->fY});
 
@@ -361,6 +361,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                         std::vector<std::pair<int, int>> testBoard = currentBoard;
                         std::vector<std::pair<int, int>> testBlackBoard = fna.blackPositions;
                         testBoard.push_back({n->fX, n->fY});
+                        testBlackBoard.push_back({n->fX, n->fY});
                         if ((n->value < nodeBest->value) && (n->value < nodeSecond->value)
                             && (n->value > nodeThird->value)
                             && (!(fna.isSymmetric(testBoard) && fna.isBlackSymmetric(testBlackBoard))))
@@ -374,6 +375,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                     for (Node *n : nodeRoot->children)
                         if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
                     currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
+                    fna.blackPositions.push_back({nodeSecond->fX, nodeSecond->fY});
                     //遍历子节点 寻找第三大值
                     nodeThird = *nodeRoot->children.begin();
                     for (Node *n : nodeRoot->children)
@@ -391,6 +393,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                         // 构造一个临时棋盘，加入这个候选打点
                         std::vector<std::pair<int, int>> testBoard = currentBoard;
                         std::vector<std::pair<int, int>> testBlackBoard = fna.blackPositions;
+                        testBlackBoard.push_back({n->fX, n->fY});
                         if ((n->value < nodeBest->value) && (n->value < nodeSecond->value)
                             && (n->value < nodeThird->value) && (n->value > nodeFourth->value)
                             && (!(fna.isSymmetric(testBoard) && fna.isBlackSymmetric(testBlackBoard))))
@@ -404,7 +407,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                     for (Node *n : nodeRoot->children)
                         if ((n->value < nodeBest->value) && (n->value > nodeSecond->value)) nodeSecond = n;
                     currentBoard.push_back({nodeSecond->fX, nodeSecond->fY});
-
+                    fna.blackPositions.push_back({nodeSecond->fX, nodeSecond->fY});
                     //遍历子节点 寻找第三大值
                     nodeThird = *nodeRoot->children.begin();
                     for (Node *n : nodeRoot->children)
@@ -412,6 +415,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                             && (n->value > nodeThird->value))
                             nodeThird = n;
                     currentBoard.push_back({nodeThird->fX, nodeThird->fY});
+                    fna.blackPositions.push_back({nodeThird->fX, nodeThird->fY});
                     //遍历子节点 寻找第四大值
                     nodeFourth = *nodeRoot->children.begin();
                     for (Node *n : nodeRoot->children)
@@ -430,6 +434,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                         // 构造一个临时棋盘，加入这个候选打点
                         std::vector<std::pair<int, int>> testBoard = currentBoard;
                         std::vector<std::pair<int, int>> testBlackBoard = fna.blackPositions;
+                        testBlackBoard.push_back({n->fX, n->fY});
                         if ((n->value < nodeBest->value) && (n->value < nodeSecond->value)
                             && (n->value < nodeThird->value) && (n->value < nodeFourth->value)
                             && (n->value > nodeFifth->value)
