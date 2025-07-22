@@ -667,52 +667,62 @@ uint8_t GameTree::showBoard(int five)
         for (uint8_t j = 0; j < 15; j++) {
             if (j != 0) cout << "─";
             if (nodeBest->board[i][j] == 'B') {
-                cout << "○"; //黑棋
+                // cout << "○"; //黑棋
+                cout << "●"; //黑棋
                 continue;
             }
             if (nodeBest->board[i][j] == 'W') {
-                cout << "●";
+                // cout << "●";
+                cout << "○"; //白旗
                 continue;
             }
             if (five == 0) //第五步棋子
             {
                 if (nodeSecond != NULL) {
                     if (nodeSecond->board[i][j] == 'B') {
-                        cout << "○"; //黑棋
+                        // cout << "○"; //黑棋
+                        cout << "●"; //黑棋
                         continue;
                     }
                     if (nodeSecond->board[i][j] == 'W') {
-                        cout << "●";
+                        // cout << "●";
+                        cout << "○"; //白旗
                         continue;
                     }
                 }
                 if (nodeThird != NULL) {
                     if (nodeThird->board[i][j] == 'B') {
-                        cout << "○"; //黑棋
+                        // cout << "○"; //黑棋
+                        cout << "●"; //黑棋
                         continue;
                     }
                     if (nodeThird->board[i][j] == 'W') {
-                        cout << "●";
+                        // cout << "●";
+                        cout << "○";
                         continue;
                     }
                 }
                 if (nodeFourth != NULL) {
                     if (nodeFourth->board[i][j] == 'B') {
-                        cout << "○"; //黑棋
+                        // cout << "○"; //黑棋
+                        cout << "●";
                         continue;
                     }
                     if (nodeFourth->board[i][j] == 'W') {
-                        cout << "●";
+                        // cout << "●";
+                        cout << "○";
                         continue;
                     }
                 }
                 if (nodeFifth != NULL) {
                     if (nodeFifth->board[i][j] == 'B') {
-                        cout << "○"; //黑棋
+                        // cout << "○"; //黑棋
+                        cout << "●";
                         continue;
                     }
                     if (nodeFifth->board[i][j] == 'W') {
-                        cout << "●";
+                        // cout << "●";
+                        cout << "○";
                         continue;
                     }
                 }
