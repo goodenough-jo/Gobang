@@ -3,12 +3,14 @@
 #include <string>
 #include <set>
 #include <cstdint>
+#include <vector>
 
 class Node
 {
 public:
     Node();
     Node(Node *node, uint8_t x, uint8_t y, char choice);
+
     int32_t visitCount; //访问次数
     double totalReward; //累计奖励
 
@@ -38,4 +40,7 @@ public:
     static int32_t evaluateWhiteF(std::string &s);
 
     static std::string convert(uint8_t pos); //将位置字符转换为字符串
+
+    // 获取当前棋盘上所有非空落子的位置（x, y）
+    std::vector<std::pair<int, int>> getCurrentBoard() const;
 };

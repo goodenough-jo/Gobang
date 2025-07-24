@@ -14,7 +14,7 @@ using std::ostringstream;
 #include <string>
 using std::string;
 #include <time.h>
-#include <memory>
+// #include <memory>
 
 using std::pair;
 using std::vector;
@@ -71,7 +71,7 @@ void outPut(string filename)
 }
 // 关于比赛信息-----------
 
-vector<pair<uint8_t, uint8_t>> goback; //存放回溯需要的点的坐标,用于输错坐标后的后退？？？
+vector<pair<uint8_t, uint8_t>> goback; //存放回溯需要的点的坐标,用于输错坐标后的后退
 int main()
 {
     //选择先手或者后手
@@ -157,7 +157,7 @@ void designatedStartP()
         break;
     }
     }
-    GameTree gt = GameTree(8, 3, board);
+    GameTree gt = GameTree(8, 3, board); //修改了探索深度与半径：原本是9,2------------------------------
     gt.showBoard(1); //显示棋盘
 
     //指定5手N打中N的值
@@ -210,8 +210,7 @@ void designatedStartP()
         board[x][y] = 'W'; //第四步为白棋子
 
         //第五步棋子 需要同时出现N个棋子 并且需要询问白方选择的棋子
-        GameTree gtFive = GameTree(8, 3, board);
-
+        GameTree gtFive = GameTree(8, 3, board); //修改了探索深度与半径：原本是9,2------------------------
         uint8_t result = gtFive.game(0, 0, N);
         if (result == 'B') {
             cout << "Black Win !" << endl;
@@ -224,7 +223,7 @@ void designatedStartP()
 
         cout << "机器打点坐标：" << endl;
         gtFive.showNextPos(0, N); //显示N各棋子的坐标,机器打点
-        gtFive.showBoard(0); //显示棋盘,进入if(five==0)显示五手N打
+        gtFive.showBoard(0);      //显示棋盘,进入if(five==0)显示五手N打
 
         //需要询问白方选择的棋子
         cout << "请问白方您选择棋子的横坐标,纵坐标分别为：";
@@ -285,12 +284,10 @@ void designatedStartP()
         //第7步之后(包括第七步)  第10步才能实现回退-------------------------------???
         for (uint8_t k = 0; k < 220; k++) {
             //记录当前棋局最后两步棋的点的坐标 先白后黑 白点就是根节点的最后落子点 黑点是博弈计算得出的最佳子节点
-            GameTree gt = GameTree(8, 3, board); //每循环一次复制一颗博弈树
-            uint8_t result = gt.game(
-                0,
-                1,
-                1);
+            GameTree gt = GameTree(8, 3, board); //每循环一次复制一颗博弈树，修改（9,2）为 8,3-----------------------------
+            uint8_t result = gt.game(0, 1, 1);
             //创建博弈树，控制博弈搜索过程 每一个子节点到达深度最大时计算估值函数 直到所有叶子节点均已计算出得分 后搜索最大得分的路径，寻找出最佳子节点为nodeBest;
+
             if (result == 'B') {
                 cout << "Black Win !" << endl;
                 outPut("/root/博弈项目/out1.txt");
@@ -407,7 +404,7 @@ void designatedStartP()
                 board[goback[0].first][goback[0].second] = 0;
                 board[goback[1].first][goback[1].second] = 0;
 
-                GameTree gtGoback = GameTree(8, 3, board);
+                GameTree gtGoback = GameTree(8, 3, board); //修改（9,2）为 8,3----------------------------
                 gtGoback.showBoard(1);
 
                 //再次询问修改后的落子点坐标
@@ -460,6 +457,42 @@ void designatedStartP()
         {
             vector<pair<uint8_t, uint8_t>> needSelection; //存放黑方的N个打点坐标
 
+            //---------------自己加的
+            fiveNAction judge;
+            std::vector<std::pair<int, int>> positions; //存储棋盘的棋子
+            judge.getBlackPostions(board);              //获取未打点前的所有黑棋坐标
+            //遍历棋盘，存放在position中,以检查对称
+            //原先的棋盘x,y与i.first,i.second相对应
+            for (int i = 0; i < 15; ++i) {
+                for (int j = 0; j < 15; ++j) {
+                    if (board[i][j] != 0) { // 非空格子即为落子
+                        positions.emplace_back(i, j);
+                    }
+                }
+            }
+            // //调试信息:打印未打点前棋盘的坐标
+            // std::cout << "打印未打点前棋盘的坐标:\n";
+            // for (std::pair<int, int> i : positions) {
+            //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+            //     std::cout << i.second << ", " << i.first << "\n";
+            // }
+            // //调试信息:打印黑子的坐标
+            // std::cout << "打印未打点前黑子棋盘的坐标:\n";
+            // for (std::pair<int, int> i : judge.blackPositions) {
+            //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+            //     std::cout << i.second << ", " << i.first << "\n";
+            // }
+            //计算原有棋盘的重心
+            judge.getSymmetricPoint(positions);
+            //计算黑子的重心
+            judge.getBlackSymmetricPoint();
+            // //调试信息:输出原棋盘的重心,以棋盘x,y为准
+            // std::cout << "原棋盘的重心:\n";
+            // std::cout << "SymmetriPoint:" << judge.symmetricPoint.second << ", " << judge.symmetricPoint.first << "\n";
+            // std::cout << "原棋盘黑子对称点:\n";
+            // std::cout << "SymmetriPoint:" << judge.blackSymmetricPoint.second << ", " << judge.blackSymmetricPoint.first
+            //           << "\n";
+            //------------------------
             cout << "请输入黑方的打点坐标" << endl;
             cout << "黑方棋子的横坐标,纵坐标分别为：" << endl;
             for (uint32_t i = 0; i < N; i++) {
@@ -470,6 +503,23 @@ void designatedStartP()
                 //存储转换后的坐标值
                 needSelection.emplace_back(pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y));
 
+                //-----------将打点放入postions中,以判断对称 保证了positions没有因x,y的变换而污染
+                positions.emplace_back(pair<int, int>((int) x, (int) y));
+                //同时添加打点到黑棋中
+                judge.blackPositions.emplace_back(pair<int, int>((int) x, (int) y));
+                // //调试信息:判断打点位置是否正确
+                // std::cout << "打印打点棋盘的坐标:\n";
+                // for (std::pair<int, int> i : positions) {
+                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                //     std::cout << i.second << ", " << i.first << "\n";
+                // }
+                // //调试信息:判断收集的黑子是否正确
+                // std::cout << "打印黑子棋盘的坐标:\n";
+                // for (std::pair<int, int> i : judge.blackPositions) {
+                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                //     std::cout << i.second << ", " << i.first << "\n";
+                // }
+                //------------------
                 while (board[x][y] != 0 || x > 14 || y > 14) {
                     cout << "黑方落子点位置不合法,请重新输入： \n";
                     cout << "黑方棋子的横坐标,纵坐标分别为：";
@@ -483,7 +533,25 @@ void designatedStartP()
             }
             cout << "输入结束" << endl;
 
-            /*
+            //--------------已经收集完成打点位置与棋盘棋子的所有坐标
+            //先判断棋盘是否对称
+            if (judge.isSymmetric(positions)) {
+                //如果重心与黑子对称点相同则该打点也是对称的
+                if (judge.blackSymmetricPoint == judge.symmetricPoint) {
+                    std::cout << "检测到对方对称!\n";
+                } else {
+                    if ((judge.isBlackSymmetric(judge.blackPositions) && judge.isSymmetric(positions))) {
+                        std::cout << "检查到对方对称!\n";
+                    } else {
+                        std::cout << "未检测到对方对称!\n";
+                    }
+                }
+            } else {
+                std::cout << "未检查到对方打点对称.\n";
+            }
+            //检查打点位置是否对称
+            //---------------
+            /*选择性保留，有关于文件复盘时的价值
             //检查黑方打点位置是否对称---------------------------------------------------------------------------
             int ack = 1;
             auto vp = std::make_unique<fiveNAction>(); //访问指针
@@ -499,13 +567,14 @@ void designatedStartP()
                 break;
             }
             //检查黑方打点位置是否对称---------------------------------------------------------------------------
-*/
+            */
+
             //计算黑方每一个N点 确定每一个点下之后白方选择最优节点的估值 将估值放入一个容器中
             vector<int32_t> selectValues;
             for (unsigned long k = 0; k < needSelection.size(); k++) {
                 board[needSelection[k].first][needSelection[k].second] = 'B'; //将此点设为'B'
                 //调用评估函数 得到当前最佳子节点的估值
-                GameTree gtSix = GameTree(5, 3, board); //------
+                GameTree gtSix = GameTree(5, 3, board); //（5,2）修改为5,3----------------------------------
                 gtSix.game(1, 1, 1);
                 //gtSix.showNextPos(1, 1);//打印下一步落子点坐标
                 //将最佳落子点的估值放入容器中
@@ -558,7 +627,7 @@ void designatedStartP()
             break;
         } else {
             //第四步 第六步及以后
-            GameTree gt = GameTree(8, 3, board);
+            GameTree gt = GameTree(8, 3, board); //原本数值-----------------------------------
             uint8_t result = gt.game(1, 1, 1);
             if (result == 'B') {
                 cout << "Black Win !" << endl;
@@ -600,7 +669,7 @@ void designatedStartP()
 void designatedStartF()
 {
     //输出着点到文件
-    //system("rm /root/博弈项目/out1.txt");
+    system("rm /root/博弈项目/out1.txt");
     ofstream out("/root/博弈项目/out1.txt");
     //手动输入黑方第一步
     cout << endl;
@@ -628,7 +697,7 @@ void designatedStartF()
     out << "B(" << _x << "," << _y << ");";
 
     board[x][y] = 'B';
-    GameTree gt1 = GameTree(8, 3, board);
+    GameTree gt1 = GameTree(8, 3, board); //原本数值---------------------------------
     gt1.showBoard(1);
     //手动输入白方第二步
     cout << "请输入白2的落子位置\n";
@@ -651,7 +720,7 @@ void designatedStartF()
     out << "W(" << _x << "," << _y << ");";
 
     board[x][y] = 'W';
-    GameTree gt2 = GameTree(8, 3, board);
+    GameTree gt2 = GameTree(8, 3, board); //原本数值---------------------------------
     gt2.showBoard(1);
     //手动输入黑方第三步
     cout << "请输入黑3的落子位置\n";
@@ -674,7 +743,7 @@ void designatedStartF()
     out << "B(" << _x << "," << _y << ");";
 
     board[x][y] = 'B';
-    GameTree gt3 = GameTree(8, 3, board);
+    GameTree gt3 = GameTree(8, 3, board); //原本数值---------------------------------
     gt3.showBoard(1);
 
     //指定5手N打中N的值
@@ -724,7 +793,6 @@ void designatedStartF()
     case 24:
     case 25:
     case 26: {
-        cout << "建议白方交换: " << endl;
         cout << endl << "白方交换" << endl;
         change = 0;
         break;
@@ -750,7 +818,7 @@ void designatedStartF()
     //白方不交换
     if (change) {
         //第四步 机器算出白方落子点
-        GameTree gt4 = GameTree(8, 3, board);
+        GameTree gt4 = GameTree(8, 3, board); //原本数值---------------------------------
         gt4.game(1, 1, 1);
         gt4.showNextPos(1, 1); //打印白4落子点坐标
 
@@ -769,6 +837,44 @@ void designatedStartF()
         vector<pair<uint8_t, uint8_t>> needSelection; //存放黑方的N个打点坐标
         for (uint8_t k = 0; k < 250; k++) {
             if (i == 0) {
+                //---------添加判断对称功能
+                fiveNAction judge;
+                std::vector<std::pair<int, int>> positions; //存储棋盘的棋子
+                judge.getBlackPostions(board);              //获取未打点前的所有黑棋坐标
+                //遍历棋盘，存放在position中,以检查对称
+                //原先的棋盘x,y与i.first,i.second相对应
+                for (int i = 0; i < 15; ++i) {
+                    for (int j = 0; j < 15; ++j) {
+                        if (board[i][j] != 0) { // 非空格子即为落子
+                            positions.emplace_back(i, j);
+                        }
+                    }
+                }
+                // //调试信息:打印未打点前棋盘的坐标
+                // std::cout << "打印未打点前棋盘的坐标:\n";
+                // for (std::pair<int, int> i : positions) {
+                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                //     std::cout << i.second << ", " << i.first << "\n";
+                // }
+                // //调试信息:打印黑子的坐标
+                // std::cout << "打印未打点前黑子棋盘的坐标:\n";
+                // for (std::pair<int, int> i : judge.blackPositions) {
+                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                //     std::cout << i.second << ", " << i.first << "\n";
+                // }
+                //计算原有棋盘的重心
+                judge.getSymmetricPoint(positions);
+                //计算黑子的重心
+                judge.getBlackSymmetricPoint();
+                // //调试信息:输出原棋盘的重心,以棋盘x,y为准
+                // std::cout << "原棋盘的重心:\n";
+                // std::cout << "SymmetriPoint:" << judge.symmetricPoint.second << ", " << judge.symmetricPoint.first
+                //           << "\n";
+                // std::cout << "原棋盘黑子对称点:\n";
+                // std::cout << "SymmetriPoint:" << judge.blackSymmetricPoint.second << ", "
+                //           << judge.blackSymmetricPoint.first << "\n";
+                //-----------
+                //让对手输入打点位置
                 cout << "请输入黑方的打点坐标" << endl;
                 cout << "黑方棋子的横坐标,纵坐标分别为：" << endl;
                 for (uint32_t i = 0; i < N; i++) {
@@ -778,8 +884,24 @@ void designatedStartF()
                     y = (uint32_t) (_x - 'A');
                     //存储转换后的坐标值
                     needSelection.emplace_back(pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y));
-
                     cout << "\n";
+                    //-----------将打点放入postions中,以判断对称 保证了positions没有因x,y的变换而污染
+                    positions.emplace_back(pair<int, int>((int) x, (int) y));
+                    //同时添加打点到黑棋中
+                    judge.blackPositions.emplace_back(pair<int, int>((int) x, (int) y));
+                    // //调试信息:判断打点位置是否正确
+                    // std::cout << "打印打点棋盘的坐标:\n";
+                    // for (std::pair<int, int> i : positions) {
+                    //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                    //     std::cout << i.second << ", " << i.first << "\n";
+                    // }
+                    // //调试信息:判断收集的黑子是否正确
+                    // std::cout << "打印黑子棋盘的坐标:\n";
+                    // for (std::pair<int, int> i : judge.blackPositions) {
+                    //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
+                    //     std::cout << i.second << ", " << i.first << "\n";
+                    // }
+                    //------------
                     while (board[x][y] != 0 || x > 14 || y > 14) {
                         cout << "黑方落子点位置不合法,请重新输入： \n";
                         cout << "黑方棋子的横坐标,纵坐标分别为：";
@@ -792,6 +914,26 @@ void designatedStartF()
                     }
                 }
                 cout << "输入结束" << endl;
+
+                //--------------已经收集完成打点位置与棋盘棋子的所有坐标
+                //先判断棋盘是否对称
+                if (judge.isSymmetric(positions)) {
+                    //如果重心与黑子对称点相同则该打点也是对称的
+                    if (judge.blackSymmetricPoint == judge.symmetricPoint) {
+                        std::cout << "检测到对方对称!\n";
+                    } else {
+                        if ((judge.isBlackSymmetric(judge.blackPositions) && judge.isSymmetric(positions))) {
+                            std::cout << "检查到对方对称!\n";
+                        } else {
+                            std::cout << "未检测到对方对称!\n";
+                        }
+                    }
+                } else {
+                    std::cout << "未检查到对方打点对称.\n";
+                }
+                //检查打点位置是否对称
+
+                //---------------
                 /*
                 //检查黑方打点位置是否对称---------------------------------------------------------------------------
                 int ack = 1;
@@ -809,12 +951,13 @@ void designatedStartF()
                 }
                 //检查黑方打点位置是否对称---------------------------------------------------------------------------
 */
+
                 //计算黑方每一个N点 确定每一个点下之后白方选择最优节点的估值 将估值放入一个容器中
                 vector<int32_t> selectValues;
                 for (unsigned long k = 0; k < needSelection.size(); k++) {
                     board[needSelection[k].first][needSelection[k].second] = 'B'; //将此点设为'B'
                     //调用评估函数 得到当前最佳子节点的估值
-                    GameTree gtSix = GameTree(5, 3, board);
+                    GameTree gtSix = GameTree(5, 3, board); //原本数值-----------------------------------
                     gtSix.game(1, 1, 1);
                     //gtSix.showNextPos(1, 1);//打印下一步落子点坐标
                     //将最佳落子点的估值放入容器中
@@ -859,7 +1002,7 @@ void designatedStartF()
                     board[goback[0].first][goback[0].second] = 0;
                     board[goback[1].first][goback[1].second] = 0;
 
-                    GameTree gtGoback = GameTree(8, 3, board);
+                    GameTree gtGoback = GameTree(8, 3, board); //原本数值---------------------------------
                     gtGoback.showBoard(1);
 
                     //再次询问修改后的落子点坐标
@@ -933,7 +1076,7 @@ void designatedStartF()
                 out.close();
                 break;
             } else {
-                GameTree gt = GameTree(8, 3, board);
+                GameTree gt = GameTree(8, 3, board); //原本数值---------------------------------
                 uint8_t result = gt.game(1, 1, 1);
                 if (result == 'B') {
                     //gt.showBoard(false);
@@ -1003,7 +1146,7 @@ void designatedStartF()
 
         board[x][y] = 'W'; //第四步为白棋子
         //2.1 第五步棋子 第五步棋子 需要同时出现N个棋子 并且需要询问白方选择的棋子
-        GameTree gtFive = GameTree(8, 3, board);
+        GameTree gtFive = GameTree(8, 3, board); //原本数值---------------------------------
         uint8_t result = gtFive.game(0, 0, N);
         if (result == 'B') {
             //gt.showBoard(false);
@@ -1075,11 +1218,9 @@ void designatedStartF()
         //4. 第7步之后(包括第七步)  第10步才能实现回退------------------------???
         for (uint8_t k = 0; k < 220; k++) {
             //记录当前棋局最后两步棋的点的坐标 先白后黑 白点就是根节点的最后落子点 黑点是博弈计算得出的最佳子节点
-            GameTree gt = GameTree(8, 3, board); //每循环一次复制一颗博弈树
-            uint8_t result = gt.game(
-                0,
-                1,
-                1); //创建博弈树，控制博弈搜索过程 每一个子节点到达深度最大时计算估值函数 直到所有叶子节点均已计算出得分 后搜索最大得分的路径，寻找出最佳子节点为nodeBest;
+            GameTree gt = GameTree(8, 3, board); //每循环一次复制一颗博弈树，修改（9,2）为 8,3---------------------------
+            uint8_t result = gt.game(0, 1, 1);
+            //创建博弈树，控制博弈搜索过程 每一个子节点到达深度最大时计算估值函数 直到所有叶子节点均已计算出得分 后搜索最大得分的路径，寻找出最佳子节点为nodeBest;
             if (result == 'B') {
                 //gt.showBoard(false);
                 cout << "Black Win !" << endl;

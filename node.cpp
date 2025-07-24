@@ -25,6 +25,7 @@ Node::Node(Node *node, uint8_t x, uint8_t y, char choice)
 {
     visitCount = 0;
     totalReward = 0.0;
+
     //node为父节点
     depth = node->depth + 1; //更新深度
     value = isMaxNode() ? INT32_MIN : INT32_MAX;
@@ -206,4 +207,20 @@ void Node::evaluate(char choice) {
         }
     }
     value = score;
+}
+
+
+std::vector<std::pair<int, int>> Node::getCurrentBoard() const
+{
+    std::vector<std::pair<int, int>> positions; //存储棋盘的棋子
+
+    //遍历棋盘，存放在position中
+    for (int i = 0; i < 15; ++i) {
+        for (int j = 0; j < 15; ++j) {
+            if (board[i][j] != 0) { // 非空格子即为落子
+                positions.emplace_back(i, j);
+            }
+        }
+    }
+    return positions;
 }
