@@ -325,9 +325,9 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                     for (Node *n : nodeRoot->children) {
                         //---------调试信息,检验是否能正确判断对称
 
-                        cout << "n->value: " << n->value << "\n";
-                        cout << "(" << (uint8_t) (n->fY + 'A') << "," << 15 - n->fX << ")" << endl;
-                        cout << (int) n->fY << ", " << (int) n->fX << "\n\n";
+                        // cout << "n->value: " << n->value << "\n";
+                        // cout << "(" << (uint8_t) (n->fY + 'A') << "," << 15 - n->fX << ")" << endl;
+                        // cout << (int) n->fY << ", " << (int) n->fX << "\n\n";
                         //----------------
                         if (n->value == nodeBest->value) continue;
                         //------防止对称 及防止黑棋对称与棋盘对称的情况同时出现

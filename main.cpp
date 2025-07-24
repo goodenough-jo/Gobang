@@ -535,10 +535,24 @@ void designatedStartP()
             if (judge.isSymmetric(positions)) {
                 //如果重心与黑子对称点相同则该打点也是对称的
                 if (judge.blackSymmetricPoint == judge.symmetricPoint) {
+                    int ack = 1;
                     std::cout << "检测到对方对称!\n";
+                    cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
+                    cin >> ack;
+                    if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
+                    outPut("/root/博弈项目/out1.txt");
+                    out.close();
+                    return;
                 } else {
                     if ((judge.isBlackSymmetric(judge.blackPositions) && judge.isSymmetric(positions))) {
-                        std::cout << "检查到对方对称!\n";
+                        int ack = 1;
+                        std::cout << "检测到对方对称!\n";
+                        cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
+                        cin >> ack;
+                        if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
+                        outPut("/root/博弈项目/out1.txt");
+                        out.close();
+                        return;
                     } else {
                         std::cout << "未检测到对方对称!\n";
                     }
@@ -916,10 +930,24 @@ void designatedStartF()
                 if (judge.isSymmetric(positions)) {
                     //如果重心与黑子对称点相同则该打点也是对称的
                     if (judge.blackSymmetricPoint == judge.symmetricPoint) {
+                        int ack = 1;
                         std::cout << "检测到对方对称!\n";
+                        cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
+                        cin >> ack;
+                        if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
+                        outPut("/root/博弈项目/out1.txt");
+                        out.close();
+                        return;
                     } else {
                         if ((judge.isBlackSymmetric(judge.blackPositions) && judge.isSymmetric(positions))) {
-                            std::cout << "检查到对方对称!\n";
+                            int ack = 1;
+                            std::cout << "检测到对方对称!\n";
+                            cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
+                            cin >> ack;
+                            if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
+                            outPut("/root/博弈项目/out1.txt");
+                            out.close();
+                            return;
                         } else {
                             std::cout << "未检测到对方对称!\n";
                         }
