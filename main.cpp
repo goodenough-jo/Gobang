@@ -14,7 +14,8 @@ using std::ostringstream;
 #include <string>
 using std::string;
 #include <time.h>
-#include <memory>
+// #include <memory>
+#include "timer.h"
 
 using std::pair;
 using std::vector;
@@ -88,12 +89,10 @@ int main()
 //先手
 void designatedStartP()
 {
-    //system("rm /root/博弈项目/out1.txt");
+    Timer gameTimer; //记录对方下棋时间
+
     //输出着点到文件
     ofstream out("/root/博弈项目/out1.txt");
-    // if (out.fail()) {
-    //     cout << "打开文件失败" << endl;
-    // }
 
     //(6斜月 13彗星 22丘月 平衡开局)
     uint32_t identifier = 0;
@@ -186,13 +185,15 @@ void designatedStartP()
     //不交换,我方执黑棋,需要加五手N打
     if (answer) {
         //第四步 白方下子
+        gameTimer.start();
+
         cout << endl << "请输入白方的落子位置\n";
         cout << "白方棋子的横坐标,纵坐标分别为：";
         cin >> _x;
         cin >> _y;
         x = (uint32_t) (15 - _y);
         y = (uint32_t) (_x - 'A');
-        cout << "(检测)x = " << x << "," << "y = " << y << endl;
+        // cout << "(检测)x = " << x << "," << "y = " << y << endl;
 
         while (board[x][y] != 0 || x > 14 || y > 14) {
             cout << "白方您的落子点位置不合法,请重新输入\n";
@@ -203,11 +204,11 @@ void designatedStartP()
             y = (uint32_t) (_x - 'A');
             cout << "\n";
         }
-
         //在判定之后输出到文件
         out << "W(" << _x << "," << _y << ");";
-
         board[x][y] = 'W'; //第四步为白棋子
+        gameTimer.stop();  //停止计时
+        gameTimer.getTotalTime(); //汇报时间
 
         //第五步棋子 需要同时出现N个棋子 并且需要询问白方选择的棋子
         GameTree gtFive = GameTree(9, 2, board);
@@ -220,7 +221,6 @@ void designatedStartP()
             cout << "White Win !" << endl;
             return;
         }
-        //开局就赢？可能吗？酌情考虑删除----------------------------------------
 
         cout << "机器打点坐标：" << endl;
         gtFive.showNextPos(0, N); //显示N各棋子的坐标,机器打点
@@ -228,6 +228,7 @@ void designatedStartP()
 
         //需要询问白方选择的棋子
         cout << "请问白方您选择棋子的横坐标,纵坐标分别为：";
+        gameTimer.start(); //记录对方选 打点所需 的时间
         cin >> _x;
         cin >> _y;
         x = (uint32_t) (15 - _y);
@@ -245,13 +246,13 @@ void designatedStartP()
 
         //在判定之后输出到文件
         out << "B(" << _x << "," << _y << ");";
-
         board[x][y] = 'B'; //记录白方选择的落子点坐标值
+        gameTimer.stop();  //停止计时
+        gameTimer.getTotalTime(); //汇报对方所用时间
 
-        //？最佳子节点---------------------------------------------------------------
+        //根据对手选的点 将nodeBest更换为对手选的打点
         gtFive.nodeBest->board[gtFive.nodeBest->fX][gtFive.nodeBest->fY] = 0;
         gtFive.nodeBest->board[x][y] = 'B'; //将最佳子节点设为白方指定的点
-
         //将多余的点清空为0
         auto pos = gtFive.getNextPos(0, N);
         for (int i = 0; i < N; i++) {
@@ -263,6 +264,7 @@ void designatedStartP()
 
         //第六步为白棋子
         cout << "白方您棋子的横坐标,纵坐标分别为：";
+        gameTimer.start(); //第六步 记录白方下棋时间
         cin >> _x;
         cin >> _y;
         x = (uint32_t) (15 - _y);
@@ -279,8 +281,9 @@ void designatedStartP()
         }
         //在判定之后输出到文件
         out << "W(" << _x << "," << _y << ");";
-
         board[x][y] = 'W'; //第六步为白棋子
+        gameTimer.stop();  //第六步 同理
+        gameTimer.getTotalTime(); //第六步 同理
 
         //第7步之后(包括第七步)  第10步才能实现回退-------------------------------???
         for (uint8_t k = 0; k < 220; k++) {
@@ -328,6 +331,8 @@ void designatedStartP()
             //白方输入落子点
             cout << "白方请输入您的落子位置\n";
             cout << "白方您方棋子的横坐标,纵坐标分别为：";
+
+            gameTimer.start(); //七步以后 每到白子开始计时
             cin >> _x;
             cin >> _y;
             int flag = 1; //判定是否回退1步(0表示回退1步,1表示不回退)
@@ -378,6 +383,21 @@ void designatedStartP()
             if (_x != 'Q') {
                 out << "W(" << _x << "," << _y << ");";
                 board[x][y] = 'W'; //第二步为白棋子
+
+                gameTimer.stop();         //停止计时
+                gameTimer.getTotalTime(); //打印时间
+                //检查对方是否超时
+                if (gameTimer.isTimeout()) {
+                    int ack = 1;
+                    std::cout << "对方超时累积15分钟,是否继续行棋？(0表示结束，1表示继续)?" << std::endl;
+                    std::cin >> ack;
+                    if (ack == 0) {
+                        cout << "对方时间超时，己方胜利，比赛结束!" << endl;
+                        outPut("/root/博弈项目/out1.txt");
+                        out.close();
+                        return;
+                    }
+                }
                 goback.clear();
                 goback.emplace_back(pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y)); //将输入的白棋的点的坐标放入容器
             }
@@ -391,6 +411,7 @@ void designatedStartP()
         {
             cout << "黑方请输入您的落子位置\n";
             cout << "黑方您方棋子的横坐标,纵坐标分别为：";
+            gameTimer.start(); //第七步之后 记录对方(黑子)时间
             cin >> _x;
             cin >> _y;
             int flag = 1; //判定是否回退1步 0表示回退1步， 1表示不回退
@@ -445,9 +466,24 @@ void designatedStartP()
                 //在判定之后输出到文件
                 out << "B(" << _x << "," << _y << ");";
                 board[x][y] = 'B';
+                gameTimer.stop();
+                gameTimer.getTotalTime();
+                //检查对方是否超时
+                if (gameTimer.isTimeout()) {
+                    int ack = 1;
+                    std::cout << "对方超时累积15分钟,是否继续行棋？(0表示结束，1表示继续)?" << std::endl;
+                    std::cin >> ack;
+                    if (ack == 0) {
+                        cout << "对方时间超时，己方胜利，比赛结束!" << endl;
+                        outPut("/root/博弈项目/out1.txt");
+                        out.close();
+                        return;
+                    }
+                }
                 goback.clear();
                 goback.emplace_back(pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y)); //将输入的黑棋的点的坐标放入容器
             }
+
         }
 
         //输入黑方的打点坐标，选择一个棋子
@@ -468,31 +504,15 @@ void designatedStartP()
                     }
                 }
             }
-            // //调试信息:打印未打点前棋盘的坐标
-            // std::cout << "打印未打点前棋盘的坐标:\n";
-            // for (std::pair<int, int> i : positions) {
-            //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-            //     std::cout << i.second << ", " << i.first << "\n";
-            // }
-            // //调试信息:打印黑子的坐标
-            // std::cout << "打印未打点前黑子棋盘的坐标:\n";
-            // for (std::pair<int, int> i : judge.blackPositions) {
-            //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-            //     std::cout << i.second << ", " << i.first << "\n";
-            // }
+
             //计算原有棋盘的重心
             judge.getSymmetricPoint(positions);
             //计算黑子的重心
             judge.getBlackSymmetricPoint();
-            // //调试信息:输出原棋盘的重心,以棋盘x,y为准
-            // std::cout << "原棋盘的重心:\n";
-            // std::cout << "SymmetriPoint:" << judge.symmetricPoint.second << ", " << judge.symmetricPoint.first << "\n";
-            // std::cout << "原棋盘黑子对称点:\n";
-            // std::cout << "SymmetriPoint:" << judge.blackSymmetricPoint.second << ", " << judge.blackSymmetricPoint.first
-            //           << "\n";
             //------------------------
             cout << "请输入黑方的打点坐标" << endl;
             cout << "黑方棋子的横坐标,纵坐标分别为：" << endl;
+            gameTimer.start(); //从对方(黑色)打点开始计时
             for (uint32_t i = 0; i < N; i++) {
                 cin >> _x;
                 cin >> _y;
@@ -504,18 +524,7 @@ void designatedStartP()
                 positions.emplace_back(pair<int, int>((int) x, (int) y));
                 //同时添加打点到黑棋中
                 judge.blackPositions.emplace_back(pair<int, int>((int) x, (int) y));
-                // //调试信息:判断打点位置是否正确
-                // std::cout << "打印打点棋盘的坐标:\n";
-                // for (std::pair<int, int> i : positions) {
-                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-                //     std::cout << i.second << ", " << i.first << "\n";
-                // }
-                // //调试信息:判断收集的黑子是否正确
-                // std::cout << "打印黑子棋盘的坐标:\n";
-                // for (std::pair<int, int> i : judge.blackPositions) {
-                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-                //     std::cout << i.second << ", " << i.first << "\n";
-                // }
+
                 //------------------
                 while (board[x][y] != 0 || x > 14 || y > 14) {
                     cout << "黑方落子点位置不合法,请重新输入： \n";
@@ -529,6 +538,8 @@ void designatedStartP()
                 }
             }
             cout << "输入结束" << endl;
+            gameTimer.stop();         //对方打点结束,停止计时
+            gameTimer.getTotalTime(); //汇报对方打点时间
 
             //--------------已经收集完成打点位置与棋盘棋子的所有坐标
             //先判断棋盘是否对称
@@ -539,20 +550,26 @@ void designatedStartP()
                     std::cout << "检测到对方对称!\n";
                     cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
                     cin >> ack;
-                    if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
-                    outPut("/root/博弈项目/out1.txt");
-                    out.close();
-                    return;
+                    if (ack == 0) {
+                        cout << "对方打点出现对称，己方胜利，比赛结束!" << endl;
+                        outPut("/root/博弈项目/out1.txt");
+                        out.close();
+                        return;
+                    }
+
                 } else {
                     if ((judge.isBlackSymmetric(judge.blackPositions) && judge.isSymmetric(positions))) {
                         int ack = 1;
                         std::cout << "检测到对方对称!\n";
                         cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
                         cin >> ack;
-                        if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
-                        outPut("/root/博弈项目/out1.txt");
-                        out.close();
-                        return;
+                        if (ack == 0) {
+                            cout << "对方打点出现对称，己方胜利，比赛结束!" << endl;
+                            outPut("/root/博弈项目/out1.txt");
+                            out.close();
+                            return;
+                        }
+
                     } else {
                         std::cout << "未检测到对方对称!\n";
                     }
@@ -560,26 +577,9 @@ void designatedStartP()
             } else {
                 std::cout << "未检查到对方打点对称.\n";
             }
-            //检查打点位置是否对称
 
             //---------------
-            /*
-            //检查黑方打点位置是否对称---------------------------------------------------------------------------
-            int ack = 1;
-            auto vp = std::make_unique<fiveNAction>(); //访问指针
-            bool check = vp->checkSymmetry(needSelection);
-            if (check) {
-                cout << "对手黑方打点出现对称，是否继续行棋？(0表示结束，1表示继续)" << endl;
-                cin >> ack;
-            }
-            if (ack == 0) {
-                cout << "黑方打点对称，白方胜利，比赛结束!" << endl;
-                outPut("/root/博弈项目/out1.txt");
-                out.close();
-                break;
-            }
-            //检查黑方打点位置是否对称---------------------------------------------------------------------------
-            */
+
             //计算黑方每一个N点 确定每一个点下之后白方选择最优节点的估值 将估值放入一个容器中
             vector<int32_t> selectValues;
             for (unsigned long k = 0; k < needSelection.size(); k++) {
@@ -678,8 +678,9 @@ void designatedStartP()
 //后手，我方执白棋
 void designatedStartF()
 {
+    Timer gameTimer; //添加后手计时器
+
     //输出着点到文件
-    //system("rm /root/博弈项目/out1.txt");
     ofstream out("/root/博弈项目/out1.txt");
     //手动输入黑方第一步
     cout << endl;
@@ -842,7 +843,7 @@ void designatedStartF()
             board[pos[0].first][pos[0].second] = 'W'; //记录当前棋局白4坐标值为'W'
         }
 
-        int i = 0; //记录第5步
+        int i = 0; //记录第5步,i==0表示对方开始打点
         //第5步棋子之后(包括第5步)
         vector<pair<uint8_t, uint8_t>> needSelection; //存放黑方的N个打点坐标
         for (uint8_t k = 0; k < 250; k++) {
@@ -860,33 +861,15 @@ void designatedStartF()
                         }
                     }
                 }
-                // //调试信息:打印未打点前棋盘的坐标
-                // std::cout << "打印未打点前棋盘的坐标:\n";
-                // for (std::pair<int, int> i : positions) {
-                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-                //     std::cout << i.second << ", " << i.first << "\n";
-                // }
-                // //调试信息:打印黑子的坐标
-                // std::cout << "打印未打点前黑子棋盘的坐标:\n";
-                // for (std::pair<int, int> i : judge.blackPositions) {
-                //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-                //     std::cout << i.second << ", " << i.first << "\n";
-                // }
                 //计算原有棋盘的重心
                 judge.getSymmetricPoint(positions);
                 //计算黑子的重心
                 judge.getBlackSymmetricPoint();
-                // //调试信息:输出原棋盘的重心,以棋盘x,y为准
-                // std::cout << "原棋盘的重心:\n";
-                // std::cout << "SymmetriPoint:" << judge.symmetricPoint.second << ", " << judge.symmetricPoint.first
-                //           << "\n";
-                // std::cout << "原棋盘黑子对称点:\n";
-                // std::cout << "SymmetriPoint:" << judge.blackSymmetricPoint.second << ", "
-                //           << judge.blackSymmetricPoint.first << "\n";
                 //-----------
                 //让对手输入打点位置
                 cout << "请输入黑方的打点坐标" << endl;
                 cout << "黑方棋子的横坐标,纵坐标分别为：" << endl;
+                gameTimer.start(); //如果不交换 打点开始计时
                 for (uint32_t i = 0; i < N; i++) {
                     cin >> _x;
                     cin >> _y;
@@ -899,18 +882,6 @@ void designatedStartF()
                     positions.emplace_back(pair<int, int>((int) x, (int) y));
                     //同时添加打点到黑棋中
                     judge.blackPositions.emplace_back(pair<int, int>((int) x, (int) y));
-                    // //调试信息:判断打点位置是否正确
-                    // std::cout << "打印打点棋盘的坐标:\n";
-                    // for (std::pair<int, int> i : positions) {
-                    //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-                    //     std::cout << i.second << ", " << i.first << "\n";
-                    // }
-                    // //调试信息:判断收集的黑子是否正确
-                    // std::cout << "打印黑子棋盘的坐标:\n";
-                    // for (std::pair<int, int> i : judge.blackPositions) {
-                    //     cout << "(" << (uint8_t) (i.second + 'A') << "," << 15 - i.first << ")" << endl;
-                    //     std::cout << i.second << ", " << i.first << "\n";
-                    // }
                     //------------
                     while (board[x][y] != 0 || x > 14 || y > 14) {
                         cout << "黑方落子点位置不合法,请重新输入： \n";
@@ -924,7 +895,8 @@ void designatedStartF()
                     }
                 }
                 cout << "输入结束" << endl;
-
+                gameTimer.stop();         //停止打点计时
+                gameTimer.getTotalTime(); //打印打点时间
                 //--------------已经收集完成打点位置与棋盘棋子的所有坐标
                 //先判断棋盘是否对称
                 if (judge.isSymmetric(positions)) {
@@ -934,20 +906,26 @@ void designatedStartF()
                         std::cout << "检测到对方对称!\n";
                         cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
                         cin >> ack;
-                        if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
-                        outPut("/root/博弈项目/out1.txt");
-                        out.close();
-                        return;
+                        if (ack == 0) {
+                            cout << "对方打点出现对称，己方胜利，比赛结束!" << endl;
+                            outPut("/root/博弈项目/out1.txt");
+                            out.close();
+                            return;
+                        }
+
                     } else {
                         if ((judge.isBlackSymmetric(judge.blackPositions) && judge.isSymmetric(positions))) {
                             int ack = 1;
                             std::cout << "检测到对方对称!\n";
                             cout << "是否继续行棋？(0表示结束，1表示继续)" << endl;
                             cin >> ack;
-                            if (ack == 0) { cout << "对方打点出现对称，己方胜利，比赛结束!" << endl; }
-                            outPut("/root/博弈项目/out1.txt");
-                            out.close();
-                            return;
+                            if (ack == 0) {
+                                cout << "对方打点出现对称，己方胜利，比赛结束!" << endl;
+                                outPut("/root/博弈项目/out1.txt");
+                                out.close();
+                                return;
+                            }
+
                         } else {
                             std::cout << "未检测到对方对称!\n";
                         }
@@ -958,23 +936,7 @@ void designatedStartF()
                 //检查打点位置是否对称
 
                 //---------------
-                /*
-                //检查黑方打点位置是否对称---------------------------------------------------------------------------
-                int ack = 1;
-                auto vp = std::make_unique<fiveNAction>(); //访问指针
-                bool check = vp->checkSymmetry(needSelection);
-                if (check) {
-                    cout << "对手黑方打点出现对称，是否继续行棋？(0表示结束，1表示继续)" << endl;
-                    cin >> ack;
-                }
-                if (ack == 0) {
-                    cout << "黑方打点对称，白方胜利，比赛结束!" << endl;
-                    outPut("/root/博弈项目/out1.txt");
-                    out.close();
-                    break;
-                }
-                //检查黑方打点位置是否对称---------------------------------------------------------------------------
-                */
+
                 //计算黑方每一个N点 确定每一个点下之后白方选择最优节点的估值 将估值放入一个容器中
                 vector<int32_t> selectValues;
                 for (unsigned long k = 0; k < needSelection.size(); k++) {
@@ -1010,6 +972,7 @@ void designatedStartF()
             } else {
                 cout << "黑方请输入您的落子位置\n";
                 cout << "黑方您方棋子的横坐标,纵坐标分别为：";
+                gameTimer.start();
                 cin >> _x;
                 cin >> _y;
                 int flag = 1; //判定是否回退1步 0表示回退1步， 1表示不回退
@@ -1066,6 +1029,20 @@ void designatedStartF()
                     //在判定之后输出到文件
                     out << "B(" << _x << "," << _y << ");";
                     board[x][y] = 'B';
+                    gameTimer.stop();         //停止计时
+                    gameTimer.getTotalTime(); //打印时间
+                    //检查对方是否超时
+                    if (gameTimer.isTimeout()) {
+                        int ack = 1;
+                        std::cout << "对方超时累积15分钟,是否继续行棋？(0表示结束，1表示继续)?" << std::endl;
+                        std::cin >> ack;
+                        if (ack == 0) {
+                            cout << "对方时间超时，己方胜利，比赛结束!" << endl;
+                            outPut("/root/博弈项目/out1.txt");
+                            out.close();
+                            return;
+                        }
+                    }
                     goback.clear();
                     goback.emplace_back(
                         pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y)); //将输入的黑棋的点的坐标放入容器
@@ -1147,6 +1124,7 @@ void designatedStartF()
         //1.交换后第四步 输入白方落子位置
         cout << "请输入白方的落子位置\n";
         cout << "白方棋子的横坐标,纵坐标分别为：";
+        gameTimer.start(); //第四步 如果交换,我方变黑,记录黑方时间
         cin >> _x;
         cin >> _y;
         x = (uint32_t) (15 - _y);
@@ -1165,22 +1143,11 @@ void designatedStartF()
         }
         //在判定之后输出到文件
         out << "W(" << _x << "," << _y << ");";
-
         board[x][y] = 'W'; //第四步为白棋子
+        gameTimer.stop();  //第四步 停止计时
+        gameTimer.getTotalTime(); //第四步 打印时间
         //2.1 第五步棋子 第五步棋子 需要同时出现N个棋子 并且需要询问白方选择的棋子
         GameTree gtFive = GameTree(8, 3, board);
-        //指定5手N打中N的值
-        // int N;
-        // cout << "请问5手N打中N的值为: " << endl;
-        // cin >> N;
-        // cout << '\n';
-
-        // while (N < 2 || N > 5) {
-        //     cout << "N的值不在正确范围内, 2<=N<=5, 请重新输入: \n";
-        //     cout << "N的值为：";
-        //     cin >> N;
-        //     cout << '\n';
-        // }
 
         uint8_t result = gtFive.game(0, 0, N);
         if (result == 'B') {
@@ -1197,6 +1164,7 @@ void designatedStartF()
         gtFive.showBoard(0);
         //2.2 需要询问白方选择的棋子
         cout << "请问白方您选择棋子的横坐标,纵坐标分别为：";
+        gameTimer.start(); //第五步 记录白方选择时间
         cin >> _x;
         cin >> _y;
         x = (uint32_t) (15 - _y);
@@ -1214,8 +1182,10 @@ void designatedStartF()
 
         //在判定之后输出到文件
         out << "B(" << _x << "," << _y << ");";
-
         board[x][y] = 'B'; //记录白方选择的落子点坐标值
+        gameTimer.stop();  //第五步 停止白方选择时间
+        gameTimer.getTotalTime(); //第五步 汇报白方时间
+
         //显示去除点后的棋盘
 
         gtFive.nodeBest->board[gtFive.nodeBest->fX][gtFive.nodeBest->fY] = 0;
@@ -1231,6 +1201,7 @@ void designatedStartF()
 
         //3. 第六步为白棋子
         cout << "白方您棋子的横坐标,纵坐标分别为：";
+        gameTimer.start(); //第六步 记录白方时间
         cin >> _x;
         cin >> _y;
         x = (uint32_t) (15 - _y);
@@ -1248,8 +1219,10 @@ void designatedStartF()
         }
         //在判定之后输出到文件
         out << "W(" << _x << "," << _y << ");";
-
         board[x][y] = 'W'; //第六步为白棋子
+        gameTimer.stop();  //第六步 停止白方时间
+        gameTimer.getTotalTime(); //第六步 打印白方时间
+
         //4. 第7步之后(包括第七步)  第10步才能实现回退------------------------???
         for (uint8_t k = 0; k < 220; k++) {
             //记录当前棋局最后两步棋的点的坐标 先白后黑 白点就是根节点的最后落子点 黑点是博弈计算得出的最佳子节点
@@ -1301,6 +1274,7 @@ void designatedStartF()
 
             cout << "白方请输入您的落子位置\n";
             cout << "白方您方棋子的横坐标,纵坐标分别为：";
+            gameTimer.start(); //记录七步以后白方下棋的时间
             cin >> _x;
             cin >> _y;
             int flag = 1; //判定是否回退1步 0表示回退1步， 1表示不回退
@@ -1352,6 +1326,20 @@ void designatedStartF()
                 out << "W(" << _x << "," << _y << ");";
                 board[x][y] = 'W'; //第二步为白棋子
                 goback.clear();
+                gameTimer.stop();         //停止七步以后下棋时间
+                gameTimer.getTotalTime(); //打印时间
+                //检查对方是否超时
+                if (gameTimer.isTimeout()) {
+                    int ack = 1;
+                    std::cout << "对方超时累积15分钟,是否继续行棋？(0表示结束，1表示继续)?" << std::endl;
+                    std::cin >> ack;
+                    if (ack == 0) {
+                        cout << "对方时间超时，己方胜利，比赛结束!" << endl;
+                        outPut("/root/博弈项目/out1.txt");
+                        out.close();
+                        return;
+                    }
+                }
                 goback.emplace_back(pair<uint8_t, uint8_t>((uint8_t) x, (uint8_t) y)); //将输入的白棋的点的坐标放入容器
             }
         }

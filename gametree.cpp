@@ -321,6 +321,7 @@ void GameTree::setNextPos(int five, int N) //five = 0表示5手交换 非0的整
                 switch (N) {
                 case 2: {
                     //遍历子节点 寻找第二大值
+
                     nodeSecond = *nodeRoot->children.begin();
                     for (Node *n : nodeRoot->children) {
                         //---------调试信息,检验是否能正确判断对称

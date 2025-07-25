@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(game
     main.cpp
     fivenaction.cpp fivenaction.h gametree.cpp gametree.h  main.cpp node.cpp node.h surChessPieces.h
+    timer.h timer.cpp
 )
 
 target_compile_features( game PRIVATE cxx_std_23 )
