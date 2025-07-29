@@ -57,29 +57,43 @@ bool fiveNAction::isSymmetric(const std::vector<std::pair<int, int>>& positions)
         int symY_horizontal = 2 * symmetricPoint.second - p.second;
         if (posSet.find({symX_horizontal, symY_horizontal}) == posSet.end()) { isHorizontalSymmetric = false; }
 
-        // 主对角线 ↘ 判断: y - x = y' - x'，排除自身
-        int value45 = p.second - p.first;
-        bool found45 = false;
-        for (const auto& q : posSet) {
-            if (q == p) continue; // 排除自身
-            if ((q.second - q.first) == value45) {
-                found45 = true;
-                break;
-            }
-        }
-        if (!found45) isDiagonalSymmetric45 = false;
+        //     // 主对角线 ↘ 判断: y - x = y' - x'，排除自身
+        //     int value45 = p.second - p.first;
+        //     bool found45 = false;
+        //     for (const auto& q : posSet) {
+        //         if (q == p) continue; // 排除自身
+        //         if ((q.second - q.first) == value45) {
+        //             found45 = true;
+        //             break;
+        //         }
+        //     }
+        //     if (!found45) isDiagonalSymmetric45 = false;
 
-        // 副对角线 ↙ 判断: y + x = x' + y'，排除自身
-        int value135 = p.second + p.first;
-        bool found135 = false;
-        for (const auto& q : posSet) {
-            if (q == p) continue; // 排除自身
-            if ((q.first + q.second) == value135) {
-                found135 = true;
-                break;
-            }
-        }
-        if (!found135) isDiagonalSymmetric135 = false;
+        //     // 副对角线 ↙ 判断: y + x = x' + y'，排除自身
+        //     int value135 = p.second + p.first;
+        //     bool found135 = false;
+        //     for (const auto& q : posSet) {
+        //         if (q == p) continue; // 排除自身
+        //         if ((q.first + q.second) == value135) {
+        //             found135 = true;
+        //             break;
+        //         }
+        //     }
+        //     if (!found135) isDiagonalSymmetric135 = false;
+        // }
+        // 主对角线 ↘ 对称：关于对称中心的主对角线对称
+        // 对称点坐标：(2*center_x - x, 2*center_y - y)
+        // 然后关于主对角线 y = x + (center_y - center_x) 对称
+        int symX_45 = p.second + (symmetricPoint.first - symmetricPoint.second);
+        int symY_45 = p.first + (symmetricPoint.second - symmetricPoint.first);
+        if (posSet.find({symX_45, symY_45}) == posSet.end()) { isDiagonalSymmetric45 = false; }
+
+        // 副对角线 ↙ 对称：关于对称中心的副对角线对称
+        // 对称点坐标：(2*center_x - x, 2*center_y - y)
+        // 然后关于副对角线 y = -x + (center_x + center_y) 对称
+        int symX_135 = symmetricPoint.first + symmetricPoint.second - p.second;
+        int symY_135 = symmetricPoint.first + symmetricPoint.second - p.first;
+        if (posSet.find({symX_135, symY_135}) == posSet.end()) { isDiagonalSymmetric135 = false; }
     }
 
     if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric || isDiagonalSymmetric135
@@ -166,43 +180,57 @@ bool fiveNAction::isBlackSymmetric(const std::vector<std::pair<int, int>>& posit
 
     for (const auto& p : positions) {
         // 中心对称
-        int symX_center = 2 * symmetricPoint.first - p.first;   // 对称位置
-        int symY_center = 2 * symmetricPoint.second - p.second; // 对称位置
+        int symX_center = 2 * blackSymmetricPoint.first - p.first;   // 对称位置
+        int symY_center = 2 * blackSymmetricPoint.second - p.second; // 对称位置
         if (posSet.find({symX_center, symY_center}) == posSet.end()) { isCenterSymmetric = false; }
 
         // 垂直轴对称（x轴翻转）
-        int symX_vertical = 2 * symmetricPoint.first - p.first;
+        int symX_vertical = 2 * blackSymmetricPoint.first - p.first;
         int symY_vertical = p.second;
         if (posSet.find({symX_vertical, symY_vertical}) == posSet.end()) { isVerticalSymmetric = false; }
 
         //计算水平轴对称，同理
         int symX_horizontal = p.first;
-        int symY_horizontal = 2 * symmetricPoint.second - p.second;
+        int symY_horizontal = 2 * blackSymmetricPoint.second - p.second;
         if (posSet.find({symX_horizontal, symY_horizontal}) == posSet.end()) { isHorizontalSymmetric = false; }
 
-        // 主对角线 ↘ 判断: y - x = y' - x'，排除自身
-        int value45 = p.second - p.first;
-        bool found45 = false;
-        for (const auto& q : posSet) {
-            if (q == p) continue; // 排除自身
-            if ((q.second - q.first) == value45) {
-                found45 = true;
-                break;
-            }
-        }
-        if (!found45) isDiagonalSymmetric45 = false;
+        //     // 主对角线 ↘ 判断: y - x = y' - x'，排除自身
+        //     int value45 = p.second - p.first;
+        //     bool found45 = false;
+        //     for (const auto& q : posSet) {
+        //         if (q == p) continue; // 排除自身
+        //         if ((q.second - q.first) == value45) {
+        //             found45 = true;
+        //             break;
+        //         }
+        //     }
+        //     if (!found45) isDiagonalSymmetric45 = false;
 
-        // 副对角线 ↙ 判断: y + x = x' + y'，排除自身
-        int value135 = p.second + p.first;
-        bool found135 = false;
-        for (const auto& q : posSet) {
-            if (q == p) continue; // 排除自身
-            if ((q.first + q.second) == value135) {
-                found135 = true;
-                break;
-            }
-        }
-        if (!found135) isDiagonalSymmetric135 = false;
+        //     // 副对角线 ↙ 判断: y + x = x' + y'，排除自身
+        //     int value135 = p.second + p.first;
+        //     bool found135 = false;
+        //     for (const auto& q : posSet) {
+        //         if (q == p) continue; // 排除自身
+        //         if ((q.first + q.second) == value135) {
+        //             found135 = true;
+        //             break;
+        //         }
+        //     }
+        //     if (!found135) isDiagonalSymmetric135 = false;
+        // }
+        // 主对角线 ↘ 对称：关于对称中心的主对角线对称
+        // 对称点坐标：(2*center_x - x, 2*center_y - y)
+        // 然后关于主对角线 y = x + (center_y - center_x) 对称
+        int symX_45 = p.second + (blackSymmetricPoint.first - blackSymmetricPoint.second);
+        int symY_45 = p.first + (blackSymmetricPoint.second - blackSymmetricPoint.first);
+        if (posSet.find({symX_45, symY_45}) == posSet.end()) { isDiagonalSymmetric45 = false; }
+
+        // 副对角线 ↙ 对称：关于对称中心的副对角线对称
+        // 对称点坐标：(2*center_x - x, 2*center_y - y)
+        // 然后关于副对角线 y = -x + (center_x + center_y) 对称
+        int symX_135 = blackSymmetricPoint.first + blackSymmetricPoint.second - p.second;
+        int symY_135 = blackSymmetricPoint.first + blackSymmetricPoint.second - p.first;
+        if (posSet.find({symX_135, symY_135}) == posSet.end()) { isDiagonalSymmetric135 = false; }
     }
 
     if (isCenterSymmetric || isVerticalSymmetric || isHorizontalSymmetric || isDiagonalSymmetric135
