@@ -783,44 +783,38 @@ void designatedStartF()
     //26：白方交换
     switch (start) {
     //黑方优势较大，交换，我方成为执黑棋的一方
+    //黑方优势大的情况:花月14 蒲月1 瑞星24 松月23 新月19 残月18 金星17
     case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 8:
-    case 10:
-    case 11:
-    // case 12:
-    // case 14:
-    // case 15:
-    // case 16:
-    // case 17:
-    // case 18:
-    // case 19:
-    case 20:
-    case 21:
+    case 14:
+    case 17:
+    case 18:
+    case 19:
     case 23:
-    case 24:
-    case 25:
-    case 26: {
+    case 24: {
         cout << endl << "白方交换" << endl;
         change = 0;
         break;
     }
     //黑白平衡 不交换
+    case 2:
+    case 3:
+    case 4:
+    case 5:
     case 6:
     case 7:
+    case 8:
     case 9:
-    case 13:
-    case 22:
+    case 10:
+    case 11:
     case 12:
-    case 14:
+    case 13:
     case 15:
     case 16:
-    case 17:
-    case 18:
-    case 19: {
+    case 20:
+    case 21:
+    case 22:
+    case 25:
+    case 26: {
         cout << endl << "白方不交换 正在计算白方落子点 请等待" << endl;
         break;
     }
